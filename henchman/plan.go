@@ -1,24 +1,22 @@
 package henchman
 
 import (
-	"log"
 	"io/ioutil"
 	"gopkg.in/yaml.v1"
 )
 
 
+type Task map[string]string
+
 type Plan struct {
 	Hosts []string
-	Tasks []map[string]string
+	Tasks []Task
 }
 		
-
-
-func ParsePlan(hosts []string, config *string) (*Plan, error) {
+func ParsePlan(config *string) (*Plan, error) {
 	plan := Plan{}
-	plan.Hosts = hosts
+
 	data, err := ioutil.ReadFile(*config)
-	log.Printf("%s", data)
 	if err != nil {
 		return nil, err
 	}
@@ -28,3 +26,4 @@ func ParsePlan(hosts []string, config *string) (*Plan, error) {
 	}
 	return &plan, nil
 }
+

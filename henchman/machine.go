@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"bytes"
 	"code.google.com/p/go.crypto/ssh"
+	"github.com/sudharsh/henchman/ansi"
 )
 
 
@@ -17,7 +18,6 @@ type Machine struct {
 	Username string
 	Password string
 	Hostname string
-	Task     string
 }
 
 const (
@@ -26,24 +26,28 @@ const (
     TTY_OP_OSPEED = 129
 )
 
+func (machine *Machine) RunTask(task Task) {
 
-	
-func (machine *Machine) RunTask() {
-	log.Println("DEBUG: " + machine.Task)
+	green := ansi.ColorCode("green")
+    reset := ansi.ColorCode("reset")
+
 	config := &ssh.ClientConfig{
 		User: machine.Username,
 	    Auth: []ssh.ClientAuth{
 			ssh.ClientAuthPassword(password(machine.Password)),
 		},
 	}
+
 	client, err := ssh.Dial("tcp", machine.Hostname + ":22", config)
 	if err != nil {
-		panic("Failed to dial: " + err.Error())
+		log.Fatalf("Failed to dial: " + err.Error())
 	}
+
 	defer client.Close()
+
 	session, err := client.NewSession()
 	if err != nil {
-		log.Fatalf("Unable to create session")
+		log.Fatalf("Unable to create session: " + err.Error())
 	}
 	defer session.Close()
 
@@ -53,15 +57,18 @@ func (machine *Machine) RunTask() {
 		TTY_OP_OSPEED: 14400,
 	}
 	if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
-		log.Fatalf("request for pseudo terminal failed")
+		log.Fatalf("request for pseudo terminal failed: " + err.Error())
 	}
 
 	var b bytes.Buffer
 	session.Stdout = &b
-	if err := session.Run(machine.Task); err != nil {
-        panic("Failed to run: " + err.Error())
-    }
-    fmt.Print(b.String())
+	log.Printf("**** Running task: %s\n", task["name"])
+	log.Printf("---- Cmd: %s\n", task["action"])
+	log.Printf("---- Host: %s\n", machine.Hostname)
+	if err := session.Run(task["action"]); err != nil {
+		panic("Failed to run: " + err.Error())
+	}
+	log.Printf("---- Output: \n")
+	fmt.Print(green + b.String() + reset)
+	log.Print("--------------------\n\n")
 }
-	
-	

@@ -23,19 +23,12 @@ func currentUsername() string {
 
 
 func main() {
-	hostname  := flag.String("host", "localhost", "Host to run the module on")
 	username  := flag.String("user", currentUsername(), "User to run as")
 	password  := flag.String("password", "", "Path to the private key file")
 	planFile := flag.String("plan", "", "Path to the plan")
-	task := flag.String("task", "", "Task to run on the remote machine")
 
 	flag.Parse()
 	if *username == "" {
-		os.Exit(1)
-	}
-
-	if *task == "" {
-		log.Fatalf("Need a task")
 		os.Exit(1)
 	}
 
@@ -46,14 +39,22 @@ func main() {
 		}
 	}
 
-	plan, err := henchman.ParsePlan([]string{ *hostname }, planFile)		
-	
+	plan, err := henchman.ParsePlan(planFile)
+	sem := make(chan int, 100)
+	for _, hostname := range plan.Hosts {
+		go func() {
+			machine := henchman.Machine{*username, *password, hostname}
+			for _, task := range plan.Tasks {
+				machine.RunTask(task)
+			}
+			sem <-1
+		}()
+		<- sem
+	}
+
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
 	}
 
-	log.Printf("Tasks: %s", plan.Tasks)
-	var m = &henchman.Machine{*username, *password, *hostname, *task}
-	m.RunTask()
 }
