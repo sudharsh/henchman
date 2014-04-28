@@ -22,9 +22,9 @@ func currentUsername() string {
 func main() {
 	username := flag.String("user", currentUsername(), "User to run as")
 	password := flag.String("password", "", "Path to the private key file")
-	planFile := flag.String("plan", "", "Path to the plan")
 
 	flag.Parse()
+	planFile := flag.Arg(0)	
 	if *username == "" {
 		os.Exit(1)
 	}
@@ -36,7 +36,7 @@ func main() {
 		}
 	}
 
-	plan, err := henchman.ParsePlan(planFile)
+	plan, err := henchman.ParsePlan(&planFile)
 	sem := make(chan int, 100)
 	for _, hostname := range plan.Hosts {
 		go func() {
