@@ -1,16 +1,14 @@
 package main
 
 import (
+	"code.google.com/p/gopass"
 	"flag"
-	"log"
 	"fmt"
+	"github.com/sudharsh/henchman/henchman"
+	"log"
 	"os"
 	"os/user"
-	"code.google.com/p/gopass"
-	"github.com/sudharsh/henchman/henchman"
 )
-
-
 
 func currentUsername() string {
 	u, err := user.Current()
@@ -21,10 +19,9 @@ func currentUsername() string {
 	return u.Username
 }
 
-
 func main() {
-	username  := flag.String("user", currentUsername(), "User to run as")
-	password  := flag.String("password", "", "Path to the private key file")
+	username := flag.String("user", currentUsername(), "User to run as")
+	password := flag.String("password", "", "Path to the private key file")
 	planFile := flag.String("plan", "", "Path to the plan")
 
 	flag.Parse()
@@ -47,9 +44,9 @@ func main() {
 			for _, task := range plan.Tasks {
 				machine.RunTask(task)
 			}
-			sem <-1
+			sem <- 1
 		}()
-		<- sem
+		<-sem
 	}
 
 	if err != nil {

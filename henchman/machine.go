@@ -1,15 +1,15 @@
 package henchman
 
 import (
-	"log"
-	"fmt"
 	"bytes"
 	"code.google.com/p/go.crypto/ssh"
+	"fmt"
 	"github.com/sudharsh/henchman/ansi"
+	"log"
 )
 
-
 type password string
+
 func (p password) Password(pass string) (string, error) {
 	return string(p), nil
 }
@@ -23,22 +23,22 @@ type Machine struct {
 const (
 	ECHO          = 53
 	TTY_OP_ISPEED = 128
-    TTY_OP_OSPEED = 129
+	TTY_OP_OSPEED = 129
 )
 
 func (machine *Machine) RunTask(task Task) {
 
 	green := ansi.ColorCode("green")
-    reset := ansi.ColorCode("reset")
+	reset := ansi.ColorCode("reset")
 
 	config := &ssh.ClientConfig{
 		User: machine.Username,
-	    Auth: []ssh.ClientAuth{
+		Auth: []ssh.ClientAuth{
 			ssh.ClientAuthPassword(password(machine.Password)),
 		},
 	}
 
-	client, err := ssh.Dial("tcp", machine.Hostname + ":22", config)
+	client, err := ssh.Dial("tcp", machine.Hostname+":22", config)
 	if err != nil {
 		log.Fatalf("Failed to dial: " + err.Error())
 	}
@@ -51,8 +51,8 @@ func (machine *Machine) RunTask(task Task) {
 	}
 	defer session.Close()
 
-	modes := ssh.TerminalModes {
-		ECHO: 0,
+	modes := ssh.TerminalModes{
+		ECHO:          0,
 		TTY_OP_ISPEED: 14400,
 		TTY_OP_OSPEED: 14400,
 	}

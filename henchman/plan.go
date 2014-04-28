@@ -1,10 +1,9 @@
 package henchman
 
 import (
-	"io/ioutil"
 	"gopkg.in/yaml.v1"
+	"io/ioutil"
 )
-
 
 type Task map[string]string
 
@@ -12,7 +11,7 @@ type Plan struct {
 	Hosts []string
 	Tasks []Task
 }
-		
+
 func ParsePlan(config *string) (*Plan, error) {
 	plan := Plan{}
 
@@ -26,4 +25,3 @@ func ParsePlan(config *string) (*Plan, error) {
 	}
 	return &plan, nil
 }
-
