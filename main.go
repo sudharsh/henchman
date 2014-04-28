@@ -46,12 +46,14 @@ func main() {
 		}
 	}
 
-	plan, err := henchman.ParsePlan(*planFile)
+	plan, err := henchman.ParsePlan([]string{ *hostname }, planFile)		
+	
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
 	}
-	log.Printf("Fooo", plan.Tasks[0]["name"])
+
+	log.Printf("Tasks: %s", plan.Tasks)
 	var m = &henchman.Machine{*username, *password, *hostname, *task}
 	m.RunTask()
 }

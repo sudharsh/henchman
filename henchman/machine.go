@@ -26,6 +26,8 @@ const (
     TTY_OP_OSPEED = 129
 )
 
+
+	
 func (machine *Machine) RunTask() {
 	log.Println("DEBUG: " + machine.Task)
 	config := &ssh.ClientConfig{

@@ -8,13 +8,16 @@ import (
 
 
 type Plan struct {
+	Hosts []string
 	Tasks []map[string]string
 }
+		
 
 
-func ParsePlan(config string) (*Plan, error) {
+func ParsePlan(hosts []string, config *string) (*Plan, error) {
 	plan := Plan{}
-	data, err := ioutil.ReadFile(config)
+	plan.Hosts = hosts
+	data, err := ioutil.ReadFile(*config)
 	log.Printf("%s", data)
 	if err != nil {
 		return nil, err
