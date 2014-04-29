@@ -1,55 +1,64 @@
 package main
 
 import (
-	"code.google.com/p/gopass"
 	"code.google.com/p/go.crypto/ssh"
+	"code.google.com/p/gopass"
 	"flag"
-	"fmt"
 	"github.com/sudharsh/henchman/henchman"
 	"log"
 	"os"
 	"os/user"
+	"path"
 )
 
-func currentUsername() string {
+func currentUsername() *user.User {
 	u, err := user.Current()
 	if err != nil {
-		log.Fatalf("Couldn't get current username")
-		return ""
+		panic("Couldn't get current username: " + err.Error())
 	}
-	return u.Username
+	return u
+}
+
+func defaultKeyFile() string {
+	u := currentUsername()
+	return path.Join(u.HomeDir, ".ssh", "id_rsa")
 }
 
 func main() {
-	username := flag.String("user", currentUsername(), "User to run as")
-	password := flag.String("password", "", "Password to the hosts")
+	username := flag.String("user", currentUsername().Username, "User to run as")
+	usePassword := flag.Bool("password", false, "Use password authentication")
+	keyfile := flag.String("private-keyfile", defaultKeyFile(), "Path to the keyfile")
 
 	flag.Parse()
-	planFile := flag.Arg(0)	
+	planFile := flag.Arg(0)
 	if *username == "" {
 		os.Exit(1)
 	}
 
-	if *password == "" {
-		var err error
-		if *password, err = gopass.GetPass("Password:"); err != nil {
-			fmt.Println(err)
+	var sshAuth ssh.ClientAuth
+	var err error
+	if *usePassword {
+		var password string
+		if password, err = gopass.GetPass("Password:"); err != nil {
+			log.Fatalf("Couldn't get password: " + err.Error())
+			os.Exit(1)
 		}
+		sshAuth, err = henchman.PasswordAuth(password)
+	} else {
+		sshAuth, err = henchman.ClientKeyAuth(*keyfile)
+	}
+	if err != nil {
+		log.Fatalf("SSH Auth prep failed: " + err.Error())
+	}
+	config := &ssh.ClientConfig{
+		User: *username,
+		Auth: []ssh.ClientAuth{sshAuth},
 	}
 
 	plan, err := henchman.ParsePlan(planFile)
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
-	}
-
-	sshAuth, err := henchman.SSHAuth(*password)
-	if err != nil {
-		log.Fatalf("SSH Auth prep failed: %s", err.Error())
-	}
-	config := &ssh.ClientConfig{
-		User: *username,
-	    Auth: sshAuth,
 	}
 
 	sem := make(chan int, 100)
