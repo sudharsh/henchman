@@ -1,23 +1,16 @@
 package henchman
 
 import (
+	"log"
+	"fmt"
 	"bytes"
 	"code.google.com/p/go.crypto/ssh"
-	"fmt"
 	"github.com/sudharsh/henchman/ansi"
-	"log"
 )
 
-type password string
-
-func (p password) Password(pass string) (string, error) {
-	return string(p), nil
-}
-
 type Machine struct {
-	Username string
-	Password string
 	Hostname string
+	SSHConfig *ssh.ClientConfig
 }
 
 const (
@@ -26,19 +19,13 @@ const (
 	TTY_OP_OSPEED = 129
 )
 
-func (machine *Machine) RunTask(task Task) {
+func (machine *Machine) RunTask(task *Task) {
 
+	t := *task
 	green := ansi.ColorCode("green")
 	reset := ansi.ColorCode("reset")
 
-	config := &ssh.ClientConfig{
-		User: machine.Username,
-		Auth: []ssh.ClientAuth{
-			ssh.ClientAuthPassword(password(machine.Password)),
-		},
-	}
-
-	client, err := ssh.Dial("tcp", machine.Hostname+":22", config)
+	client, err := ssh.Dial("tcp", machine.Hostname+":22", machine.SSHConfig)
 	if err != nil {
 		log.Fatalf("Failed to dial: " + err.Error())
 	}
@@ -62,10 +49,10 @@ func (machine *Machine) RunTask(task Task) {
 
 	var b bytes.Buffer
 	session.Stdout = &b
-	log.Printf("**** Running task: %s\n", task["name"])
-	log.Printf("---- Cmd: %s\n", task["action"])
+	log.Printf("**** Running task: %s\n", t["name"])
+	log.Printf("---- Cmd: %s\n", t["action"])
 	log.Printf("---- Host: %s\n", machine.Hostname)
-	if err := session.Run(task["action"]); err != nil {
+	if err := session.Run(t["action"]); err != nil {
 		panic("Failed to run: " + err.Error())
 	}
 	log.Printf("---- Output: \n")

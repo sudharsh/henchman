@@ -2,6 +2,7 @@ package main
 
 import (
 	"code.google.com/p/gopass"
+	"code.google.com/p/go.crypto/ssh"
 	"flag"
 	"fmt"
 	"github.com/sudharsh/henchman/henchman"
@@ -21,7 +22,7 @@ func currentUsername() string {
 
 func main() {
 	username := flag.String("user", currentUsername(), "User to run as")
-	password := flag.String("password", "", "Path to the private key file")
+	password := flag.String("password", "", "Password to the hosts")
 
 	flag.Parse()
 	planFile := flag.Arg(0)	
@@ -36,22 +37,31 @@ func main() {
 		}
 	}
 
-	plan, err := henchman.ParsePlan(&planFile)
+	plan, err := henchman.ParsePlan(planFile)
+	if err != nil {
+		log.Fatalf("Couldn't read the plan: %s", err)
+		os.Exit(1)
+	}
+
+	sshAuth, err := henchman.SSHAuth(*password)
+	if err != nil {
+		log.Fatalf("SSH Auth prep failed: %s", err.Error())
+	}
+	config := &ssh.ClientConfig{
+		User: *username,
+	    Auth: sshAuth,
+	}
+
 	sem := make(chan int, 100)
 	for _, hostname := range plan.Hosts {
 		go func() {
-			machine := henchman.Machine{*username, *password, hostname}
+			machine := henchman.Machine{hostname, config}
 			for _, task := range plan.Tasks {
-				machine.RunTask(task)
+				machine.RunTask(&task)
 			}
 			sem <- 1
 		}()
 		<-sem
-	}
-
-	if err != nil {
-		log.Fatalf("Couldn't read the plan: %s", err)
-		os.Exit(1)
 	}
 
 }

@@ -12,10 +12,10 @@ type Plan struct {
 	Tasks []Task
 }
 
-func ParsePlan(config *string) (*Plan, error) {
+func ParsePlan(config string) (*Plan, error) {
 	plan := Plan{}
 
-	data, err := ioutil.ReadFile(*config)
+	data, err := ioutil.ReadFile(config)
 	if err != nil {
 		return nil, err
 	}
@@ -25,3 +25,4 @@ func ParsePlan(config *string) (*Plan, error) {
 	}
 	return &plan, nil
 }
+
