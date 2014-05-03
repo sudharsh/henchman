@@ -49,10 +49,10 @@ func (machine *Machine) RunTask(task *Task) {
 
 	var b bytes.Buffer
 	session.Stdout = &b
-	log.Printf("**** Running task: %s\n", t["name"])
-	log.Printf("---- Cmd: %s\n", t["action"])
+	log.Printf("**** Running task: %s\n", t.Name)
+	log.Printf("---- Cmd: %s\n", t.Action)
 	log.Printf("---- Host: %s\n", machine.Hostname)
-	if err := session.Run(t["action"]); err != nil {
+	if err := session.Run(t.Action); err != nil {
 		panic("Failed to run: " + err.Error())
 	}
 	log.Printf("---- Output: \n")

@@ -6,11 +6,10 @@ import (
 	"flag"
 	"github.com/sudharsh/henchman/henchman"
 	"log"
-	"strings"
-
 	"os"
 	"os/user"
 	"path"
+	"strings"
 )
 
 func currentUsername() *user.User {
@@ -46,6 +45,7 @@ func main() {
 	flag.Parse()
 
 	args := parseExtraArgs(*extraArgs)
+	_ = args
 	planFile := flag.Arg(0)
 	if *username == "" {
 		os.Exit(1)

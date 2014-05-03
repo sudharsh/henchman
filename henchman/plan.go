@@ -3,13 +3,18 @@ package henchman
 import (
 	"gopkg.in/yaml.v1"
 	"io/ioutil"
+	"log"
 )
 
-type Task map[string]string
+type Task struct {
+	Name   string
+	Action string
+}
 
 type Plan struct {
 	Hosts []string
 	Tasks []Task
+	Vars   map[string]string
 }
 
 func ParsePlan(config string) (*Plan, error) {
