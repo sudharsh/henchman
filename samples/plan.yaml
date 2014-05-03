@@ -1,0 +1,10 @@
+hosts:
+  - 192.168.33.11
+  - 192.168.33.12
+  
+tasks:
+  - name: Get uname
+    action: uname -a
+
+  - name: Check iptables status
+    action: sudo /sbin/service iptables status
