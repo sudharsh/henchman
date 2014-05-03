@@ -62,15 +62,14 @@ func main() {
 	}
 
 	sem := make(chan int, 100)
-	for _, hostname := range plan.Hosts {
-		go func() {
-			machine := henchman.Machine{hostname, config}
-			for _, task := range plan.Tasks {
+	for _, task := range plan.Tasks {
+		for _, hostname := range plan.Hosts {
+			go func() {
+				machine := henchman.Machine{hostname, config}
 				machine.RunTask(&task)
-			}
-			sem <- 1
-		}()
-		<-sem
+				sem <- 1
+			}()
+			<- sem
+		}
 	}
-
 }
