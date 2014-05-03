@@ -6,6 +6,8 @@ import (
 	"flag"
 	"github.com/sudharsh/henchman/henchman"
 	"log"
+	"strings"
+
 	"os"
 	"os/user"
 	"path"
@@ -24,12 +26,26 @@ func defaultKeyFile() string {
 	return path.Join(u.HomeDir, ".ssh", "id_rsa")
 }
 
+func parseExtraArgs(args string) map[string]string {
+	extraArgs := make(map[string]string)
+	if args == "" {
+		return extraArgs
+	}
+	for _, a := range strings.Split(args, " ") {
+		kv := strings.Split(a, "=")
+		extraArgs[kv[0]] = kv[1]
+	}
+	return extraArgs
+}
+
 func main() {
 	username := flag.String("user", currentUsername().Username, "User to run as")
 	usePassword := flag.Bool("password", false, "Use password authentication")
 	keyfile := flag.String("private-keyfile", defaultKeyFile(), "Path to the keyfile")
-
+	extraArgs := flag.String("args", "", "Extra arguments for the plan")
 	flag.Parse()
+
+	args := parseExtraArgs(*extraArgs)
 	planFile := flag.Arg(0)
 	if *username == "" {
 		os.Exit(1)
@@ -69,7 +85,7 @@ func main() {
 				machine.RunTask(&task)
 				sem <- 1
 			}()
-			<- sem
+			<-sem
 		}
 	}
 }

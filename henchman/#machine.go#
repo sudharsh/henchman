@@ -1,15 +1,15 @@
 package henchman
 
 import (
+	"log"
+	"fmt"
 	"bytes"
 	"code.google.com/p/go.crypto/ssh"
-	"fmt"
 	"github.com/sudharsh/henchman/ansi"
-	"log"
 )
 
 type Machine struct {
-	Hostname  string
+	Hostname string
 	SSHConfig *ssh.ClientConfig
 }
 

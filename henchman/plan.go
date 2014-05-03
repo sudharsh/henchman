@@ -25,4 +25,3 @@ func ParsePlan(config string) (*Plan, error) {
 	}
 	return &plan, nil
 }
-
