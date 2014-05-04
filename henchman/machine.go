@@ -10,6 +10,7 @@ import (
 
 type Machine struct {
 	Hostname  string
+	Vars      TaskVars
 	SSHConfig *ssh.ClientConfig
 }
 
@@ -20,7 +21,6 @@ const (
 )
 
 func (machine *Machine) RunTask(task *Task) {
-
 	t := *task
 	green := ansi.ColorCode("green")
 	reset := ansi.ColorCode("reset")

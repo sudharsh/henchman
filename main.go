@@ -44,8 +44,6 @@ func main() {
 	extraArgs := flag.String("args", "", "Extra arguments for the plan")
 	flag.Parse()
 
-	args := parseExtraArgs(*extraArgs)
-	_ = args
 	planFile := flag.Arg(0)
 	if *username == "" {
 		os.Exit(1)
@@ -78,10 +76,12 @@ func main() {
 	}
 
 	sem := make(chan int, 100)
+	/* Merge extra vars. -args takes higher precendence */
+	variables := plan.GetVars(parseExtraArgs(*extraArgs))
 	for _, task := range plan.Tasks {
 		for _, hostname := range plan.Hosts {
 			go func() {
-				machine := henchman.Machine{hostname, config}
+				machine := henchman.Machine{hostname, variables, config}
 				machine.RunTask(&task)
 				sem <- 1
 			}()

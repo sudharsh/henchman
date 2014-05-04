@@ -3,8 +3,9 @@ package henchman
 import (
 	"gopkg.in/yaml.v1"
 	"io/ioutil"
-	"log"
 )
+
+type TaskVars map[string]string
 
 type Task struct {
 	Name   string
@@ -14,7 +15,22 @@ type Task struct {
 type Plan struct {
 	Hosts []string
 	Tasks []Task
-	Vars   map[string]string
+	Vars  TaskVars
+}
+
+func mergeMap(source *TaskVars, dest *TaskVars) {
+	s := *source
+	d := *dest
+	for variable, value := range s {
+		d[variable] = value
+	}
+}
+
+func (plan *Plan) GetVars(overrides TaskVars) TaskVars {
+	variables := make(TaskVars)
+	mergeMap(&plan.Vars, &variables)
+	mergeMap(&overrides, &variables)
+	return variables
 }
 
 func ParsePlan(config string) (*Plan, error) {
