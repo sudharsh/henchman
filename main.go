@@ -69,7 +69,7 @@ func main() {
 		Auth: []ssh.ClientAuth{sshAuth},
 	}
 
-	plan, err := henchman.ParsePlan(planFile)
+	plan, err := henchman.ParsePlan(planFile, parseExtraArgs(*extraArgs))
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
@@ -77,11 +77,10 @@ func main() {
 
 	sem := make(chan int, 100)
 	/* Merge extra vars. -args takes higher precendence */
-	variables := plan.GetVars(parseExtraArgs(*extraArgs))
 	for _, task := range plan.Tasks {
 		for _, hostname := range plan.Hosts {
 			go func() {
-				machine := henchman.Machine{hostname, variables, config}
+				machine := henchman.Machine{hostname, plan.Vars, config}
 				machine.RunTask(&task)
 				sem <- 1
 			}()

@@ -26,14 +26,7 @@ func mergeMap(source *TaskVars, dest *TaskVars) {
 	}
 }
 
-func (plan *Plan) GetVars(overrides TaskVars) TaskVars {
-	variables := make(TaskVars)
-	mergeMap(&plan.Vars, &variables)
-	mergeMap(&overrides, &variables)
-	return variables
-}
-
-func ParsePlan(config string) (*Plan, error) {
+func ParsePlan(config string, overrides TaskVars) (*Plan, error) {
 	plan := Plan{}
 
 	data, err := ioutil.ReadFile(config)
@@ -44,5 +37,6 @@ func ParsePlan(config string) (*Plan, error) {
 	if err != nil {
 		return nil, err
 	}
+	mergeMap(&overrides, &plan.Vars)
 	return &plan, nil
 }
