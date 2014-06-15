@@ -1,8 +1,10 @@
 package henchman
 
 import (
+	"bytes"
 	"gopkg.in/yaml.v1"
 	"io/ioutil"
+	"text/template"
 )
 
 type TaskVars map[string]string
@@ -13,9 +15,10 @@ type Task struct {
 }
 
 type Plan struct {
-	Hosts []string
-	Tasks []Task
-	Vars  TaskVars
+	Hosts          []string
+	Tasks          []Task
+	Vars           TaskVars
+	overriddenVars TaskVars
 }
 
 func mergeMap(source *TaskVars, dest *TaskVars) {
@@ -26,10 +29,20 @@ func mergeMap(source *TaskVars, dest *TaskVars) {
 	}
 }
 
+func prepareTemplate(config string, vars TaskVars) ([]byte, error) {
+	var buf bytes.Buffer
+	data, err := ioutil.ReadFile(config)
+	tmpl, err := template.New("test").Parse(string(data[:]))
+	if err != nil {
+		panic(err)
+	}
+	err = tmpl.Execute(&buf, vars)
+	return buf.Bytes(), err
+}
+
 func ParsePlan(config string, overrides TaskVars) (*Plan, error) {
 	plan := Plan{}
-
-	data, err := ioutil.ReadFile(config)
+	data, err := prepareTemplate(config, overrides)
 	if err != nil {
 		return nil, err
 	}
@@ -37,6 +50,5 @@ func ParsePlan(config string, overrides TaskVars) (*Plan, error) {
 	if err != nil {
 		return nil, err
 	}
-	mergeMap(&overrides, &plan.Vars)
 	return &plan, nil
 }

@@ -77,10 +77,11 @@ func main() {
 
 	sem := make(chan int, 100)
 	/* Merge extra vars. -args takes higher precendence */
+
+	machines := henchman.Machines(plan, config)
 	for _, task := range plan.Tasks {
-		for _, hostname := range plan.Hosts {
+		for _, machine := range machines {
 			go func() {
-				machine := henchman.Machine{hostname, plan.Vars, config}
 				machine.RunTask(&task)
 				sem <- 1
 			}()
