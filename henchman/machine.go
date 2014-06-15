@@ -20,15 +20,12 @@ const (
 	TTY_OP_OSPEED = 129
 )
 
-func Machines(plan *Plan, config *ssh.ClientConfig) []*Machine {
+func Machines(hostnames []string, vars TaskVars, config *ssh.ClientConfig) []*Machine {
 	var machines []*Machine
-	for _, hostname := range plan.Hosts {
-		log.Printf("Hostname is: %s\n", hostname)
-		machine := Machine{hostname, plan.Vars, config}
+	for _, hostname := range hostnames {
+		machine := Machine{hostname, vars, config}
 		machines = append(machines, &machine)
-		fmt.Println(machines)
 	}
-	log.Printf("Number of machines %d\n", len(machines))
 	return machines
 }
 
