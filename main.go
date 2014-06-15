@@ -4,15 +4,14 @@ import (
 	"code.google.com/p/go.crypto/ssh"
 	"code.google.com/p/gopass"
 	"flag"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
-	"io/ioutil"
 	"path"
 	"strings"
 
 	"github.com/sudharsh/henchman/henchman"
-
 )
 
 func currentUsername() *user.User {
@@ -77,7 +76,7 @@ func main() {
 		log.Fatalf("Error reading plan - %s\n", planFile)
 		os.Exit(1)
 	}
-		
+
 	plan, err := henchman.ParsePlan(planBuf, parseExtraArgs(*extraArgs))
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)

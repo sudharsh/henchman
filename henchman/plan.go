@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sudharsh/henchman/ansi"
-	"log"
 	"gopkg.in/yaml.v1"
+	"log"
 	"text/template"
 
 	"code.google.com/p/go.crypto/ssh"
@@ -19,9 +19,9 @@ type Task struct {
 }
 
 type Plan struct {
-	Hosts          []string
-	Tasks          []Task
-	Vars           TaskVars
+	Hosts []string
+	Tasks []Task
+	Vars  TaskVars
 }
 
 const (
@@ -58,7 +58,6 @@ func ParsePlan(planBuf []byte, overrides TaskVars) (*Plan, error) {
 	return &plan, nil
 }
 
-
 func (task *Task) prepare(vars TaskVars) {
 	var err error
 	task.Name, err = prepareTemplate(task.Name, vars)
@@ -71,13 +70,12 @@ func (task *Task) prepare(vars TaskVars) {
 	}
 }
 
-
 func (task *Task) RunOn(machine *Machine, vars TaskVars) {
 	task.prepare(vars)
 	green := ansi.ColorCode("green")
-	red   := ansi.ColorCode("red")
+	red := ansi.ColorCode("red")
 	reset := ansi.ColorCode("reset")
-	
+
 	client, err := ssh.Dial("tcp", machine.Hostname+":22", machine.SSHConfig)
 	if err != nil {
 		log.Fatalf("Failed to dial: " + err.Error())
@@ -114,4 +112,3 @@ func (task *Task) RunOn(machine *Machine, vars TaskVars) {
 	}
 	log.Print("--------------------\n\n")
 }
-

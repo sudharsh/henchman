@@ -9,7 +9,6 @@ type Machine struct {
 	SSHConfig *ssh.ClientConfig
 }
 
-
 func Machines(hostnames []string, config *ssh.ClientConfig) []*Machine {
 	var machines []*Machine
 	for _, hostname := range hostnames {
@@ -18,4 +17,3 @@ func Machines(hostnames []string, config *ssh.ClientConfig) []*Machine {
 	}
 	return machines
 }
-
