@@ -4,12 +4,15 @@ import (
 	"code.google.com/p/go.crypto/ssh"
 	"code.google.com/p/gopass"
 	"flag"
-	"github.com/sudharsh/henchman/henchman"
 	"log"
 	"os"
 	"os/user"
+	"io/ioutil"
 	"path"
 	"strings"
+
+	"github.com/sudharsh/henchman/henchman"
+
 )
 
 func currentUsername() *user.User {
@@ -69,7 +72,13 @@ func main() {
 		Auth: []ssh.ClientAuth{sshAuth},
 	}
 
-	plan, err := henchman.ParsePlan(planFile, parseExtraArgs(*extraArgs))
+	planBuf, err := ioutil.ReadFile(planFile)
+	if err != nil {
+		log.Fatalf("Error reading plan - %s\n", planFile)
+		os.Exit(1)
+	}
+		
+	plan, err := henchman.ParsePlan(planBuf, parseExtraArgs(*extraArgs))
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
@@ -78,11 +87,11 @@ func main() {
 	sem := make(chan int, 100)
 	/* Merge extra vars. -args takes higher precendence */
 
-	machines := henchman.Machines(plan.Hosts, plan.Vars, config)
+	machines := henchman.Machines(plan.Hosts, config)
 	for _, task := range plan.Tasks {
 		for _, machine := range machines {
 			go func() {
-				machine.RunTask(&task)
+				task.RunOn(machine, plan.Vars)
 				sem <- 1
 			}()
 			<-sem

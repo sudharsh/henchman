@@ -1,14 +1,14 @@
 vars:
-  package: bar
+  service: iptables
   
 hosts:
-  - 192.168.33.11
-  - 192.168.33.12
+  - 192.168.66.11
+  - 192.168.66.12
   
 tasks:
   - name: Get uname
     action: uname -a
 
-  - name: Check iptables status
-    action: sudo /sbin/service iptables status
+  - name: Checking if package {{ .service }} exists
+    action: sudo /sbin/service {{ .service }} status
 
