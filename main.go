@@ -84,7 +84,6 @@ func main() {
 	}
 
 	sem := make(chan int, 100)
-	/* Merge extra vars. -args takes higher precendence */
 
 	machines := henchman.Machines(plan.Hosts, config)
 	for _, task := range plan.Tasks {
@@ -96,4 +95,5 @@ func main() {
 			<-sem
 		}
 	}
+
 }
