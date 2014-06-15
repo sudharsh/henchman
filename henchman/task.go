@@ -36,7 +36,7 @@ func (task *Task) prepare(vars TaskVars) {
 	}
 }
 
-func (task *Task) RunOn(machine *Machine, vars TaskVars) {
+func (task *Task) RunOn(machine *Machine, vars TaskVars, status chan string) {
 	task.prepare(vars)
 	green := ansi.ColorCode("green")
 	red := ansi.ColorCode("red")
@@ -73,9 +73,11 @@ func (task *Task) RunOn(machine *Machine, vars TaskVars) {
 	if err := session.Run(task.Action); err != nil {
 		log.Printf("Failed to run: " + err.Error())
 		fmt.Print(red + b.String() + reset)
+		status <- "failure"
 	} else {
 		log.Printf("---- Success: \n")
 		fmt.Print(green + b.String() + reset)
+		status <- "success"
 	}
 	log.Print("--------------------\n\n")
 }

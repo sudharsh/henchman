@@ -84,16 +84,16 @@ func main() {
 	}
 
 	sem := make(chan int, 100)
-
 	machines := henchman.Machines(plan.Hosts, config)
 	for _, task := range plan.Tasks {
 		for _, machine := range machines {
 			go func() {
-				task.RunOn(machine, plan.Vars)
+				task.RunOn(machine, plan.Vars, plan.Report)
 				sem <- 1
 			}()
 			<-sem
 		}
 	}
-
+	close(plan.Report)
+	plan.PrintReport()
 }
