@@ -1,4 +1,4 @@
 henchman
 ========
 
-Orchestration tool. Mainly to teach myself golang
+Orchestration tool, inspired by Ansible, but with less dependencies
