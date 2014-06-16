@@ -2,7 +2,6 @@ package henchman
 
 import (
 	"code.google.com/p/go.crypto/ssh"
-	"io"
 	"io/ioutil"
 	"strings"
 )
@@ -13,48 +12,23 @@ func strip(v string) string {
 
 type password string
 
-func (p password) Password(pass string) (string, error) {
-	return string(p), nil
-}
-
-type keychain struct {
-	keys []ssh.Signer
-}
-
-func (k *keychain) Key(i int) (ssh.PublicKey, error) {
-	if i < 0 || i >= len(k.keys) {
-		return nil, nil
-	}
-	return k.keys[i].PublicKey(), nil
-}
-
-func (k *keychain) Sign(i int, rand io.Reader, data []byte) (sig []byte, err error) {
-	return k.keys[i].Sign(rand, data)
-}
-
-func (k *keychain) add(key ssh.Signer) {
-	k.keys = append(k.keys, key)
-}
-
-func (k *keychain) loadPEM(file string) error {
+func loadPEM(file string) (ssh.Signer, error) {
 	buf, err := ioutil.ReadFile(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	key, err := ssh.ParsePrivateKey(buf)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	k.add(key)
-	return nil
+	return key, nil
 }
 
-func ClientKeyAuth(keyFile string) (ssh.ClientAuth, error) {
-	k := new(keychain)
-	err := k.loadPEM(keyFile)
-	return ssh.ClientAuthKeyring(k), err
+func ClientKeyAuth(keyFile string) (ssh.AuthMethod, error) {
+	key, err := loadPEM(keyFile)
+	return ssh.PublicKeys(key), err
 }
 
-func PasswordAuth(pass string) (ssh.ClientAuth, error) {
-	return ssh.ClientAuthPassword(password(pass)), nil
+func PasswordAuth(pass string) (ssh.AuthMethod, error) {
+	return ssh.Password(pass), nil
 }

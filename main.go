@@ -51,7 +51,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var sshAuth ssh.ClientAuth
+	var sshAuth ssh.AuthMethod
 	var err error
 	if *usePassword {
 		var password string
@@ -68,7 +68,7 @@ func main() {
 	}
 	config := &ssh.ClientConfig{
 		User: *username,
-		Auth: []ssh.ClientAuth{sshAuth},
+		Auth: []ssh.AuthMethod{sshAuth},
 	}
 
 	planBuf, err := ioutil.ReadFile(planFile)
