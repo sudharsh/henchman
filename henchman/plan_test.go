@@ -2,7 +2,7 @@ package henchman
 
 import "testing"
 
-func TestParsePlanWithoutOverrides(t* testing.T) {
+func TestParsePlanWithoutOverrides(t *testing.T) {
 	plan_string := `---
 hosts:
   - 127.0.0.1
@@ -24,9 +24,8 @@ tasks:
 	}
 }
 
-
-func TestParsePlanWithOverrides(t* testing.T) {
-		plan_string := `---
+func TestParsePlanWithOverrides(t *testing.T) {
+	plan_string := `---
 vars:
   service: foo
 hosts:
@@ -39,7 +38,7 @@ tasks:
  `
 	tv := make(TaskVars)
 	tv["service"] = "overridden_foo"
-	
+
 	plan, err := ParsePlan([]byte(plan_string), tv)
 	if err != nil {
 		panic(err)
@@ -54,6 +53,3 @@ tasks:
 		t.Error("Plan vars 'service' should have been 'overridden_foo'")
 	}
 }
-	
-	
-	

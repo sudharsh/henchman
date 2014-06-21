@@ -4,8 +4,7 @@ import (
 	"testing"
 )
 
-
-func TestPrepareTask(t* testing.T) {
+func TestPrepareTask(t *testing.T) {
 	task := Task{"The {{ .variable1 }}", "The {{ .variable2 }}"}
 	vars := make(TaskVars)
 	vars["variable1"] = "foo"
@@ -18,4 +17,3 @@ func TestPrepareTask(t* testing.T) {
 		t.Errorf("Template execution for Task.Action failed. Got - %s\n", task.Action)
 	}
 }
-	
