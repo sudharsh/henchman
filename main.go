@@ -1,8 +1,6 @@
 package main
 
 import (
-	"code.google.com/p/go.crypto/ssh"
-	"code.google.com/p/gopass"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -10,6 +8,10 @@ import (
 	"os/user"
 	"path"
 	"strings"
+	"sync"
+
+	"code.google.com/p/go.crypto/ssh"
+	"code.google.com/p/gopass"
 
 	"github.com/sudharsh/henchman/henchman"
 )
@@ -53,6 +55,7 @@ func main() {
 
 	var sshAuth ssh.AuthMethod
 	var err error
+
 	if *usePassword {
 		var password string
 		if password, err = gopass.GetPass("Password:"); err != nil {
@@ -83,17 +86,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	sem := make(chan int, 100)
+	wg := new(sync.WaitGroup)
 	machines := henchman.Machines(plan.Hosts, config)
-	for _, task := range plan.Tasks {
-		for _, machine := range machines {
-			go func() {
+	for _, _machine := range machines {
+		machine := _machine
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for _, task := range plan.Tasks {
 				task.RunOn(machine, plan.Vars, plan.Report)
-				sem <- 1
-			}()
-			<-sem
-		}
+			}
+		}()
 	}
+	wg.Wait()
 	close(plan.Report)
 	plan.PrintReport()
 }
