@@ -24,7 +24,7 @@ func prepareTemplate(data string, vars TaskVars) (string, error) {
 	return string(buf.Bytes()), err
 }
 
-func (task *Task) prepare(vars TaskVars) {
+func (task *Task) Prepare(vars TaskVars) {
 	var err error
 	task.Name, err = prepareTemplate(task.Name, vars)
 	if err != nil {
@@ -37,7 +37,7 @@ func (task *Task) prepare(vars TaskVars) {
 }
 
 func (task *Task) RunOn(machine *Machine, vars TaskVars, status chan string) {
-	task.prepare(vars)
+	task.Prepare(vars)
 	green := ansi.ColorCode("green")
 	red := ansi.ColorCode("red")
 	reset := ansi.ColorCode("reset")
