@@ -51,7 +51,7 @@ tasks:
 		t.Errorf("Numnber of tasks mismatch. Parsed %d tasks instead\n", len(plan.Tasks))
 	}
 	if plan.Vars["service"] != "overridden_foo" {
-		t.Error("Plan vars 'service' should have been 'foo'")
+		t.Error("Plan vars 'service' should have been 'overridden_foo'")
 	}
 }
 	
