@@ -72,7 +72,6 @@ func (task *Task) RunOn(machine *Machine, vars TaskVars, status chan string) {
 	var escapeCode string
 
 	if err := session.Run(task.Action); err != nil {
-		fmt.Printf("%s\n", task)
 		if task.IgnoreErrors {
 			log.Printf("Ignoring this task's error")
 			status <- "ignored"
