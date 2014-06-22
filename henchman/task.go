@@ -10,8 +10,8 @@ import (
 )
 
 type Task struct {
-	Name   string
-	Action string
+	Name         string
+	Action       string
 	IgnoreErrors bool `yaml:"ignore_errors"`
 }
 
