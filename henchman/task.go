@@ -45,14 +45,12 @@ func (task *Task) RunOn(machine *Machine, vars TaskVars, status chan string) {
 	if err != nil {
 		log.Fatalf("Failed to dial: " + err.Error())
 	}
-
-	defer client.Close()
-
 	session, err := client.NewSession()
 	if err != nil {
 		log.Fatalf("Unable to create session: " + err.Error())
 	}
 	defer session.Close()
+	defer client.Close()
 
 	modes := ssh.TerminalModes{
 		ECHO:          0,

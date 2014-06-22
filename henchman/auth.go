@@ -3,14 +3,7 @@ package henchman
 import (
 	"code.google.com/p/go.crypto/ssh"
 	"io/ioutil"
-	"strings"
 )
-
-func strip(v string) string {
-	return strings.TrimSpace(strings.Trim(v, "\n"))
-}
-
-type password string
 
 func loadPEM(file string) (ssh.Signer, error) {
 	buf, err := ioutil.ReadFile(file)
