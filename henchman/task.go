@@ -12,6 +12,7 @@ import (
 type Task struct {
 	Name   string
 	Action string
+	IgnoreErrors bool `yaml:"ignore_errors"`
 }
 
 func prepareTemplate(data string, vars TaskVars) (string, error) {
@@ -38,8 +39,6 @@ func (task *Task) Prepare(vars TaskVars) {
 
 func (task *Task) RunOn(machine *Machine, vars TaskVars, status chan string) {
 	task.Prepare(vars)
-	green := ansi.ColorCode("green")
-	red := ansi.ColorCode("red")
 	reset := ansi.ColorCode("reset")
 
 	client, err := ssh.Dial("tcp", machine.Hostname+":22", machine.SSHConfig)
@@ -70,14 +69,24 @@ func (task *Task) RunOn(machine *Machine, vars TaskVars, status chan string) {
 	log.Printf("---- Cmd: %s\n", task.Action)
 	log.Printf("---- Host: %s\n", machine.Hostname)
 
+	var escapeCode string
+
 	if err := session.Run(task.Action); err != nil {
-		log.Printf("Failed to run: " + err.Error())
-		fmt.Print(red + b.String() + reset)
-		status <- "failure"
+		fmt.Printf("%s\n", task)
+		if task.IgnoreErrors {
+			log.Printf("Ignoring this task's error")
+			status <- "ignored"
+			escapeCode = ansi.ColorCode("yellow")
+		} else {
+			log.Printf("Failed to run: " + err.Error())
+			status <- "failure"
+			escapeCode = ansi.ColorCode("red")
+		}
 	} else {
 		log.Printf("---- Success: \n")
-		fmt.Print(green + b.String() + reset)
+		escapeCode = ansi.ColorCode("green")
 		status <- "success"
 	}
-	log.Print("--------------------\n\n")
+	fmt.Print(escapeCode + b.String() + reset)
+	log.Print("--------------------")
 }

@@ -5,7 +5,7 @@ import (
 )
 
 func TestPrepareTask(t *testing.T) {
-	task := Task{"The {{ .variable1 }}", "The {{ .variable2 }}"}
+	task := Task{"The {{ .variable1 }}", "The {{ .variable2 }}", false}
 	vars := make(TaskVars)
 	vars["variable1"] = "foo"
 	vars["variable2"] = "bar"

@@ -2,13 +2,20 @@ vars:
   service: iptables
   
 hosts:
-  - 192.168.66.11
-  - 192.168.66.12
+  - 192.168.33.11
+  - 192.168.33.12
+  - 192.168.33.13
   
 tasks:
+  - name: Checking if package {{ .service }} exists
+    action: sudo /sbin/service {{ .service }} status
+
   - name: Get uname
     action: uname -a
 
-  - name: Checking if package {{ .service }} exists
-    action: sudo /sbin/service {{ .service }} status
+  - name: Task that will most definitely error out
+    action: cat non_existent_file
+    ignore_errors: true
+
+
 
