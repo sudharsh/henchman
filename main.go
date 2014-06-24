@@ -63,6 +63,7 @@ func main() {
 	}
 	
 	if *username == "" {
+		fmt.Fprintf(os.Stderr, "Missing username")
 		os.Exit(1)
 	}
 
