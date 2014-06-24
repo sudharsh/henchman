@@ -9,6 +9,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"fmt"
 
 	"code.google.com/p/go.crypto/ssh"
 	"code.google.com/p/gopass"
@@ -42,13 +43,25 @@ func parseExtraArgs(args string) map[string]string {
 }
 
 func main() {
+	
 	username := flag.String("user", currentUsername().Username, "User to run as")
 	usePassword := flag.Bool("password", false, "Use password authentication")
 	keyfile := flag.String("private-keyfile", defaultKeyFile(), "Path to the keyfile")
 	extraArgs := flag.String("args", "", "Extra arguments for the plan")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [args] <plan>\n\n", os.Args[0])
+		flag.PrintDefaults()		
+	}
 	flag.Parse()
 
 	planFile := flag.Arg(0)
+
+	if planFile == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
+	
 	if *username == "" {
 		os.Exit(1)
 	}
