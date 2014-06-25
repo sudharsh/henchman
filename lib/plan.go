@@ -28,7 +28,7 @@ func mergeMap(source *TaskVars, destination *TaskVars) {
 	}
 }
 
-func ParsePlan(planBuf []byte, overrides TaskVars) (*Plan, error) {
+func NewPlan(planBuf []byte, overrides TaskVars) (*Plan, error) {
 	plan := Plan{}
 	err := yaml.Unmarshal(planBuf, &plan)
 	if err != nil {

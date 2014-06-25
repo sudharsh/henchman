@@ -94,7 +94,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	plan, err := henchman.ParsePlan(planBuf, parseExtraArgs(*extraArgs))
+	plan, err := henchman.NewPlan(planBuf, parseExtraArgs(*extraArgs))
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
