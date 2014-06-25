@@ -5,8 +5,12 @@ import (
 	"gopkg.in/yaml.v1"
 )
 
+// TaskVars hold any variables that is overridden through the cli
 type TaskVars map[string]string
 
+// A plan is a collection of tasks.
+// All the tasks are executed serially, although the same plan
+// is run concurrently on multiple machines
 type Plan struct {
 	Hosts []string
 	Tasks []Task
