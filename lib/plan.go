@@ -11,7 +11,8 @@ type Plan struct {
 	Hosts  []string
 	Tasks  []Task
 	Vars   TaskVars
-	Report chan string
+	
+	report map[string]string
 }
 
 const (
@@ -35,22 +36,27 @@ func NewPlan(planBuf []byte, overrides TaskVars) (*Plan, error) {
 		return nil, err
 	}
 	mergeMap(&overrides, &plan.Vars)
-	plan.Report = make(chan string, len(plan.Tasks)*len(plan.Hosts))
+	plan.report = make(map[string]string)
 	return &plan, nil
 }
 
 func (plan *Plan) PrintReport() {
-	var report = make(map[string]int)
-	for status := range plan.Report {
-		_, present := report[status]
+	var counts = make(map[string]int)
+	for _, status := range plan.report {
+		_, present := counts[status]
 		if !present {
-			report[status] = 1
+			counts[status] = 1
 		} else {
-			report[status]++
+			counts[status]++
 		}
 	}
 	fmt.Printf("Plan Report:\n")
-	for k, v := range report {
+	for k, v := range counts {
 		fmt.Printf("%s - %d\n", k, v)
 	}
+}
+
+
+func (plan *Plan) SaveStatus(task *Task, status string) {
+	plan.report[task.Id] = status
 }

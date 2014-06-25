@@ -2,15 +2,18 @@ package henchman
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"text/template"
 
 	"code.google.com/p/go.crypto/ssh"
+	"code.google.com/p/go-uuid/uuid"
+	
 	"github.com/sudharsh/henchman/ansi"
 )
 
 type Task struct {
+	Id string
+	
 	Name         string
 	Action       string
 	IgnoreErrors bool `yaml:"ignore_errors"`
@@ -26,8 +29,10 @@ func prepareTemplate(data string, vars TaskVars) (string, error) {
 	return string(buf.Bytes()), err
 }
 
+
 func (task *Task) Prepare(vars TaskVars) {
 	var err error
+	task.Id = uuid.New()
 	task.Name, err = prepareTemplate(task.Name, vars)
 	if err != nil {
 		panic(err)
@@ -38,7 +43,7 @@ func (task *Task) Prepare(vars TaskVars) {
 	}
 }
 
-func (task *Task) RunOn(machine *Machine, vars TaskVars, status chan string) {
+func (task *Task) RunOn(machine *Machine, vars TaskVars) (string) {
 	task.Prepare(vars)
 	reset := ansi.ColorCode("reset")
 
@@ -64,27 +69,22 @@ func (task *Task) RunOn(machine *Machine, vars TaskVars, status chan string) {
 
 	var b bytes.Buffer
 	session.Stdout = &b
-	log.Printf("**** Running task: %s\n", task.Name)
-	log.Printf("---- Cmd: %s\n", task.Action)
-	log.Printf("---- Host: %s\n", machine.Hostname)
+	log.Printf("%s: %s '%s'\n", task.Id, machine.Hostname, task.Name)
 
 	var escapeCode string
-
+	var taskStatus string
 	if err := session.Run(task.Action); err != nil {
 		if task.IgnoreErrors {
-			log.Printf("Ignoring this task's error")
-			status <- "ignored"
+			taskStatus = "ignored"
 			escapeCode = ansi.ColorCode("yellow")
 		} else {
-			log.Printf("Failed to run: " + err.Error())
-			status <- "failure"
+			taskStatus = "failure"
 			escapeCode = ansi.ColorCode("red")
 		}
 	} else {
-		log.Printf("---- Success: \n")
 		escapeCode = ansi.ColorCode("green")
-		status <- "success"
+		taskStatus = "success"
 	}
-	fmt.Print(escapeCode + b.String() + reset)
-	log.Print("--------------------")
+	log.Printf("%s: %s [%s] - %s", task.Id, escapeCode, taskStatus, b.String() + reset)
+	return taskStatus
 }
