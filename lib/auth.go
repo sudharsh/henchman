@@ -1,8 +1,8 @@
 package henchman
 
 import (
-	"io/ioutil"
 	"code.google.com/p/go.crypto/ssh"
+	"io/ioutil"
 )
 
 func loadPEM(file string) (ssh.Signer, error) {

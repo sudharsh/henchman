@@ -8,10 +8,10 @@ import (
 type TaskVars map[string]string
 
 type Plan struct {
-	Hosts  []string
-	Tasks  []Task
-	Vars   TaskVars
-	
+	Hosts []string
+	Tasks []Task
+	Vars  TaskVars
+
 	report map[string]string
 }
 
@@ -55,7 +55,6 @@ func (plan *Plan) PrintReport() {
 		fmt.Printf("%s - %d\n", k, v)
 	}
 }
-
 
 func (plan *Plan) SaveStatus(task *Task, status string) {
 	plan.report[task.Id] = status

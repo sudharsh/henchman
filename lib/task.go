@@ -5,15 +5,22 @@ import (
 	"log"
 	"text/template"
 
-	"code.google.com/p/go.crypto/ssh"
 	"code.google.com/p/go-uuid/uuid"
-	
+	"code.google.com/p/go.crypto/ssh"
+
 	"github.com/sudharsh/henchman/ansi"
 )
 
+var statuses = map[string]string{
+	"reset":   ansi.ColorCode("reset"),
+	"success": ansi.ColorCode("green"),
+	"ignored": ansi.ColorCode("yellow"),
+	"failure": ansi.ColorCode("red"),
+}
+
 type Task struct {
 	Id string
-	
+
 	Name         string
 	Action       string
 	IgnoreErrors bool `yaml:"ignore_errors"`
@@ -29,7 +36,6 @@ func prepareTemplate(data string, vars TaskVars) (string, error) {
 	return string(buf.Bytes()), err
 }
 
-
 func (task *Task) Prepare(vars TaskVars) {
 	var err error
 	task.Id = uuid.New()
@@ -43,9 +49,8 @@ func (task *Task) Prepare(vars TaskVars) {
 	}
 }
 
-func (task *Task) RunOn(machine *Machine, vars TaskVars) (string) {
+func (task *Task) RunOn(machine *Machine, vars TaskVars) string {
 	task.Prepare(vars)
-	reset := ansi.ColorCode("reset")
 
 	client, err := ssh.Dial("tcp", machine.Hostname+":22", machine.SSHConfig)
 	if err != nil {
@@ -71,20 +76,17 @@ func (task *Task) RunOn(machine *Machine, vars TaskVars) (string) {
 	session.Stdout = &b
 	log.Printf("%s: %s '%s'\n", task.Id, machine.Hostname, task.Name)
 
-	var escapeCode string
-	var taskStatus string
+	var taskStatus string = "success"
 	if err := session.Run(task.Action); err != nil {
 		if task.IgnoreErrors {
 			taskStatus = "ignored"
-			escapeCode = ansi.ColorCode("yellow")
 		} else {
 			taskStatus = "failure"
-			escapeCode = ansi.ColorCode("red")
 		}
-	} else {
-		escapeCode = ansi.ColorCode("green")
-		taskStatus = "success"
 	}
-	log.Printf("%s: %s [%s] - %s", task.Id, escapeCode, taskStatus, b.String() + reset)
+
+	escapeCode := statuses[taskStatus]
+	var reset string = statuses["reset"]
+	log.Printf("%s: %s [%s] - %s", task.Id, escapeCode, taskStatus, b.String()+reset)
 	return taskStatus
 }
