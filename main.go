@@ -14,7 +14,7 @@ import (
 	"code.google.com/p/go.crypto/ssh"
 	"code.google.com/p/gopass"
 
-	"github.com/sudharsh/henchman/henchman"
+	"github.com/sudharsh/henchman/lib"
 )
 
 func currentUsername() *user.User {
