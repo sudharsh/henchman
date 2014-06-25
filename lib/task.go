@@ -2,11 +2,12 @@ package henchman
 
 import (
 	"bytes"
-	"code.google.com/p/go.crypto/ssh"
 	"fmt"
-	"github.com/sudharsh/henchman/ansi"
 	"log"
 	"text/template"
+
+	"code.google.com/p/go.crypto/ssh"
+	"github.com/sudharsh/henchman/ansi"
 )
 
 type Task struct {
