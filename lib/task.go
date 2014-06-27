@@ -18,7 +18,7 @@ var statuses = map[string]string{
 	"failure": ansi.ColorCode("red"),
 }
 
-// Task is the unit of work in henchman. 
+// Task is the unit of work in henchman.
 type Task struct {
 	Id string
 
