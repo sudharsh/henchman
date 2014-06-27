@@ -43,7 +43,6 @@ func parseExtraArgs(args string) map[string]string {
 }
 
 func main() {
-
 	username := flag.String("user", currentUsername().Username, "User to run as")
 	usePassword := flag.Bool("password", false, "Use password authentication")
 	keyfile := flag.String("private-keyfile", defaultKeyFile(), "Path to the keyfile")
@@ -108,7 +107,8 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for _, task := range plan.Tasks {
-				status := task.RunOn(machine, plan.Vars)
+				task.Prepare(plan.Vars)
+				status := machine.RunTask(&task)
 				plan.SaveStatus(&task, status)
 			}
 		}()
