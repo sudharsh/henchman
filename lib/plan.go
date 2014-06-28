@@ -17,6 +17,7 @@ type Plan struct {
 	Vars  TaskVars
 
 	report map[string]string
+	tasks  []map[string]string `yaml:"tasks"`
 }
 
 const (
@@ -39,9 +40,21 @@ func NewPlan(planBuf []byte, overrides TaskVars) (*Plan, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	mergeMap(&overrides, &plan.Vars)
 	plan.report = make(map[string]string)
 	return &plan, nil
+}
+
+func (plan *Plan) parseTasks() {
+	for _, t := range plan.tasks {
+		task := Task{}
+		task.Name = t["name"]
+		task.Action = t["action"]
+		_, present := t["ignore_errors"]
+		task.IgnoreErrors = bool(present)
+		plan.Tasks = append(plan.Tasks, task)
+	}
 }
 
 func (plan *Plan) PrintReport() {
