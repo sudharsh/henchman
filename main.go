@@ -42,11 +42,27 @@ func parseExtraArgs(args string) map[string]string {
 	return extraArgs
 }
 
+func validateModulesPath() (string, error) {
+	_modulesDir := os.Getenv("HENCHMAN_MODULES_PATH")
+	if _modulesDir == "" {
+		cwd, _ := os.Getwd()
+		_modulesDir = path.Join(cwd, "modules")
+	}
+	modulesDir := flag.String("modules", _modulesDir, "Path to the modules")
+	_, err := os.Stat(*modulesDir)
+	return *modulesDir, err
+}
+
 func main() {
 	username := flag.String("user", currentUsername().Username, "User to run as")
 	usePassword := flag.Bool("password", false, "Use password authentication")
 	keyfile := flag.String("private-keyfile", defaultKeyFile(), "Path to the keyfile")
 	extraArgs := flag.String("args", "", "Extra arguments for the plan")
+
+	modulesDir, err := validateModulesPath()
+	if err != nil {
+		log.Fatalf("Couldn't stat modules path '%s'\n", modulesDir)
+	}
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [args] <plan>\n\n", os.Args[0])
@@ -55,7 +71,6 @@ func main() {
 	flag.Parse()
 
 	planFile := flag.Arg(0)
-
 	if planFile == "" {
 		flag.Usage()
 		os.Exit(1)
@@ -65,10 +80,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Missing username")
 		os.Exit(1)
 	}
-
 	var sshAuth ssh.AuthMethod
-	var err error
-
 	if *usePassword {
 		var password string
 		if password, err = gopass.GetPass("Password:"); err != nil {
@@ -93,7 +105,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	plan, err := henchman.NewPlan(planBuf, parseExtraArgs(*extraArgs))
+	var plan *henchman.Plan
+	plan, err = henchman.NewPlan(planBuf, parseExtraArgs(*extraArgs))
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
