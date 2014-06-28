@@ -3,6 +3,4 @@ gom 'code.google.com/p/go.crypto/ssh', :commit => '1064b89a6fb591df0dd65422295b8
 gom 'code.google.com/p/gopass', :commit => '3b39664481b57ad99d34c86bd64090c28eacc7a1'
 gom 'gopkg.in/yaml.v1', :commit => 'b0c168ac0cf9493da1f9bb76c34b26ffef940b4a'
 
-gom 'github.com/sudharsh/henchman/ansi' 
-gom 'github.com/sudharsh/henchman/lib'  
 
