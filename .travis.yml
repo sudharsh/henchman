@@ -2,7 +2,6 @@ language: go
 go:
   - tip
 before_install:
-  - go get github.com/mattn/gom
+  - export PATH="$PATH:$HOME/gopath/bin"
 script:
-  - $HOME/gopath/bin/gom install
-  - $HOME/gopath/bin/gom test ./...
+  - make test
