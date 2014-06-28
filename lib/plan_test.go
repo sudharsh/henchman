@@ -11,6 +11,7 @@ tasks:
     action: ls -al
   - name: Second task
     action: echo 'foo'
+    ignore_errors: true
  `
 	plan, err := NewPlan([]byte(plan_string), nil)
 	if err != nil {
@@ -21,6 +22,10 @@ tasks:
 	}
 	if len(plan.Tasks) != 2 {
 		t.Errorf("Numnber of tasks mismatch. Parsed %d tasks instead\n", len(plan.Tasks))
+	}
+	second_task := plan.Tasks[1]
+	if second_task.IgnoreErrors {
+		t.Errorf("The task '%s' had ignore_errors set to true. Got %t\n", second_task.Name, second_task.IgnoreErrors)
 	}
 }
 
@@ -35,6 +40,7 @@ tasks:
     action: ls -al
   - name: Second task
     action: echo 'foo'
+    ignore_errors: false
  `
 	tv := make(TaskVars)
 	tv["service"] = "overridden_foo"
@@ -51,5 +57,9 @@ tasks:
 	}
 	if plan.Vars["service"] != "overridden_foo" {
 		t.Error("Plan vars 'service' should have been 'overridden_foo'")
+	}
+	second_task := plan.Tasks[1]
+	if second_task.IgnoreErrors {
+		t.Errorf("The task '%s' had ignore_errors set to false. Got %t\n", second_task.Name, second_task.IgnoreErrors)
 	}
 }
