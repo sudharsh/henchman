@@ -1,15 +1,16 @@
 test: fetch-deps
-	go test ./...
+	gom test ./...
 
 clean:
 	rm -rf bin/
 
 bin/henchman: fetch-deps
-	go build -x -o $@ ./
+	gom build -x -o $@ ./
 
 all: bin/henchman
 
 fetch-deps:
-	go get -d -v ./...
+	go get github.com/mattn/gom
+	gom install
 
 .PHONEY: clean all test fetch-deps
