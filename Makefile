@@ -3,6 +3,7 @@ test: fetch-deps
 
 clean:
 	rm -rf bin/
+	rm -rf _vendor
 
 bin/henchman: fetch-deps
 	gom build -x -o $@ ./
