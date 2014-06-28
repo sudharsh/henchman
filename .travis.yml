@@ -1,5 +1,7 @@
 language: go
 go:
   - tip
+before_install:
+  - go get github.com/mattn/gom
 script:
-  - make test
+  - make
