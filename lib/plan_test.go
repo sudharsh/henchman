@@ -45,7 +45,7 @@ tasks:
 	tv := make(TaskVars)
 	tv["service"] = "overridden_foo"
 
-	plan, err := NewPlan([]byte(plan_string), tv)
+	plan, err := NewPlan([]byte(plan_string), &tv)
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +55,8 @@ tasks:
 	if len(plan.Tasks) != 2 {
 		t.Errorf("Numnber of tasks mismatch. Parsed %d tasks instead\n", len(plan.Tasks))
 	}
-	if plan.Vars["service"] != "overridden_foo" {
+	vars := *plan.Vars
+	if vars["service"] != "overridden_foo" {
 		t.Error("Plan vars 'service' should have been 'overridden_foo'")
 	}
 	second_task := plan.Tasks[1]

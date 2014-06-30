@@ -30,8 +30,8 @@ func defaultKeyFile() string {
 	return path.Join(u.HomeDir, ".ssh", "id_rsa")
 }
 
-func parseExtraArgs(args string) map[string]string {
-	extraArgs := make(map[string]string)
+func parseExtraArgs(args string) henchman.TaskVars {
+	extraArgs := make(henchman.TaskVars)
 	if args == "" {
 		return extraArgs
 	}
@@ -106,7 +106,8 @@ func main() {
 	}
 
 	var plan *henchman.Plan
-	plan, err = henchman.NewPlan(planBuf, parseExtraArgs(*extraArgs))
+	parsedArgs := parseExtraArgs(*extraArgs)
+	plan, err = henchman.NewPlan(planBuf, &parsedArgs)
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)

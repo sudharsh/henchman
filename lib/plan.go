@@ -14,7 +14,7 @@ type TaskVars map[string]string
 type Plan struct {
 	Hosts []string
 	Tasks []Task
-	Vars  TaskVars
+	Vars  *TaskVars
 
 	report map[string]string
 	tasks  []map[string]string `yaml:"tasks"`
@@ -34,14 +34,15 @@ func mergeMap(source *TaskVars, destination *TaskVars) {
 	}
 }
 
-func NewPlan(planBuf []byte, overrides TaskVars) (*Plan, error) {
+func NewPlan(planBuf []byte, overrides *TaskVars) (*Plan, error) {
 	plan := Plan{}
 	err := yaml.Unmarshal(planBuf, &plan)
 	if err != nil {
 		return nil, err
 	}
-
-	mergeMap(&overrides, &plan.Vars)
+	if overrides != nil {
+		mergeMap(overrides, plan.Vars)
+	}
 	plan.report = make(map[string]string)
 	return &plan, nil
 }
