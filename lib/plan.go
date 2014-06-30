@@ -15,6 +15,7 @@ type Plan struct {
 	Hosts []string
 	Tasks []Task
 	Vars  *TaskVars
+	Name  string
 
 	report map[string]string
 	tasks  []map[string]string `yaml:"tasks"`
@@ -60,6 +61,12 @@ func (plan *Plan) parseTasks() {
 
 func (plan *Plan) PrintReport() {
 	var counts = make(map[string]int)
+
+	total := len(plan.Tasks) * len(plan.Hosts)
+	attempted := len(plan.report)
+	skipped := total - attempted
+
+	counts["skipped"] = skipped
 	for _, status := range plan.report {
 		_, present := counts[status]
 		if !present {
@@ -68,10 +75,17 @@ func (plan *Plan) PrintReport() {
 			counts[status]++
 		}
 	}
-	fmt.Printf("Plan Report:\n")
+	fmt.Println()
+	fmt.Println("---")
+	fmt.Printf("Plan Report: %s\n", plan.Name)
+	fmt.Println()
 	for k, v := range counts {
-		fmt.Printf("%s - %d\n", k, v)
+		fmt.Printf("%s (all hosts):\t%d\n", k, v)
 	}
+	fmt.Println()
+	fmt.Printf("Tasks total (all hosts):\t%d\n",
+		len(plan.Tasks)*len(plan.Hosts))
+	fmt.Printf("Tasks attempted (all hosts):\t%d\n", len(plan.report))
 }
 
 func (plan *Plan) SaveStatus(task *Task, status string) {

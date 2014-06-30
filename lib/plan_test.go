@@ -4,6 +4,7 @@ import "testing"
 
 func TestParsePlanWithoutOverrides(t *testing.T) {
 	plan_string := `---
+name: "Sample plan"
 hosts:
   - 127.0.0.1
 tasks:
@@ -23,6 +24,9 @@ tasks:
 	if len(plan.Tasks) != 2 {
 		t.Errorf("Numnber of tasks mismatch. Parsed %d tasks instead\n", len(plan.Tasks))
 	}
+	if plan.Name != "Sample plan" {
+		t.Errorf("Plan name mismath. Got %s\n", plan.Name)
+	}
 	second_task := plan.Tasks[1]
 	if !second_task.IgnoreErrors {
 		t.Errorf("The task '%s' had ignore_errors set to true. Got %t\n", second_task.Name, second_task.IgnoreErrors)
@@ -31,6 +35,7 @@ tasks:
 
 func TestParsePlanWithOverrides(t *testing.T) {
 	plan_string := `---
+name: Sample plan
 vars:
   service: foo
 hosts:
@@ -54,6 +59,9 @@ tasks:
 	}
 	if len(plan.Tasks) != 2 {
 		t.Errorf("Numnber of tasks mismatch. Parsed %d tasks instead\n", len(plan.Tasks))
+	}
+	if plan.Name != "Sample plan" {
+		t.Errorf("Plan name mismath. Got %s\n", plan.Name)
 	}
 	vars := *plan.Vars
 	if vars["service"] != "overridden_foo" {
