@@ -4,12 +4,11 @@ vars:
 hosts:
   - 192.168.33.11
   - 192.168.33.12
-  - 192.168.33.13
   
 tasks:
-  - name: Checking if package {{ .service }} exists
-    action: sudo /sbin/service {{ .service }} status
-
+  - name: Checking if package {{ vars.service }} exists
+    action: sudo /sbin/service {{ vars.service }} status
+    
   - name: Get uname
     action: uname -a
 

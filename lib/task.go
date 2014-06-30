@@ -1,10 +1,8 @@
 package henchman
 
 import (
-	"bytes"
-	"text/template"
-
 	"code.google.com/p/go-uuid/uuid"
+	"github.com/flosch/pongo2"
 
 	"github.com/sudharsh/henchman/ansi"
 )
@@ -25,17 +23,15 @@ type Task struct {
 	IgnoreErrors bool
 }
 
-func prepareTemplate(data string, vars TaskVars) (string, error) {
-	var buf bytes.Buffer
-	tmpl, err := template.New("test").Parse(data)
+func prepareTemplate(data string, vars *TaskVars) (string, error) {
+	tmpl, err := pongo2.FromString(data)
 	if err != nil {
 		panic(err)
 	}
-	err = tmpl.Execute(&buf, vars)
-	return string(buf.Bytes()), err
+	return tmpl.Execute(&pongo2.Context{"vars": vars})
 }
 
-func (task *Task) Prepare(vars TaskVars) {
+func (task *Task) Prepare(vars *TaskVars) {
 	var err error
 	task.Id = uuid.New()
 	task.Name, err = prepareTemplate(task.Name, vars)
