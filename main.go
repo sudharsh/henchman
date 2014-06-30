@@ -30,6 +30,10 @@ func defaultKeyFile() string {
 	return path.Join(u.HomeDir, ".ssh", "id_rsa")
 }
 
+// Split args from the cli that are of the form,
+// "a=x b=y c=z" as a map of form { "a": "b", "b": "y", "c": "z" }
+// These plan arguments override the variables that may be defined
+// as part of the plan file.
 func parseExtraArgs(args string) henchman.TaskVars {
 	extraArgs := make(henchman.TaskVars)
 	if args == "" {
@@ -42,6 +46,7 @@ func parseExtraArgs(args string) henchman.TaskVars {
 	return extraArgs
 }
 
+// TODO: Modules
 func validateModulesPath() (string, error) {
 	_modulesDir := os.Getenv("HENCHMAN_MODULES_PATH")
 	if _modulesDir == "" {
@@ -80,6 +85,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Missing username")
 		os.Exit(1)
 	}
+
+	// We support two SSH authentications methods for now
+	// password and client key bases. Both are mutually exclusive and password takes
+	// higher precedence
 	var sshAuth ssh.AuthMethod
 	if *usePassword {
 		var password string
@@ -107,12 +116,14 @@ func main() {
 
 	var plan *henchman.Plan
 	parsedArgs := parseExtraArgs(*extraArgs)
-	plan, err = henchman.NewPlan(planBuf, &parsedArgs)
+	plan, err = henchman.NewPlanFromYAML(planBuf, &parsedArgs)
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
 	}
 
+	// Execute the same plan concurrently across all the machines.
+	// Note the tasks themselves in plan are executed sequentially.
 	wg := new(sync.WaitGroup)
 	machines := henchman.Machines(plan.Hosts, config)
 	for _, _machine := range machines {

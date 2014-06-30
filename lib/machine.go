@@ -7,6 +7,12 @@ import (
 	"code.google.com/p/go.crypto/ssh"
 )
 
+const (
+	ECHO          = 53
+	TTY_OP_ISPEED = 128
+	TTY_OP_OSPEED = 129
+)
+
 type Machine struct {
 	Hostname  string
 	SSHConfig *ssh.ClientConfig
@@ -20,6 +26,8 @@ func Machines(hostnames []string, config *ssh.ClientConfig) []*Machine {
 	return machines
 }
 
+// Exec this action on the machine
+// TODO: Handle modules here
 func (machine *Machine) Exec(action string) (*bytes.Buffer, error) {
 	client, err := ssh.Dial("tcp", machine.Hostname+":22", machine.SSHConfig)
 	if err != nil {

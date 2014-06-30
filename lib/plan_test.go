@@ -14,7 +14,7 @@ tasks:
     action: echo 'foo'
     ignore_errors: true
  `
-	plan, err := NewPlan([]byte(plan_string), nil)
+	plan, err := NewPlanFromYAML([]byte(plan_string), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +50,7 @@ tasks:
 	tv := make(TaskVars)
 	tv["service"] = "overridden_foo"
 
-	plan, err := NewPlan([]byte(plan_string), &tv)
+	plan, err := NewPlanFromYAML([]byte(plan_string), &tv)
 	if err != nil {
 		panic(err)
 	}

@@ -33,6 +33,8 @@ func prepareTemplate(data string, vars *TaskVars, machine *Machine) (string, err
 	return tmpl.Execute(&pongo2.Context{"vars": vars, "machine": machine})
 }
 
+// Renders the template parts in the task field.
+// Also assigns a new UUID to the task uniquely identifying it.
 func (task *Task) prepare(vars *TaskVars, machine *Machine) {
 	var err error
 	task.Id = uuid.New()
@@ -46,6 +48,8 @@ func (task *Task) prepare(vars *TaskVars, machine *Machine) {
 	}
 }
 
+// Runs the task on the machine. The task might mutate `vars` so that other
+// tasks down the `plan` can see any additions/updates.
 func (task *Task) Run(machine *Machine, vars *TaskVars) string {
 	task.prepare(vars, machine)
 	log.Printf("%s: %s '%s'\n", task.Id, machine.Hostname, task.Name)

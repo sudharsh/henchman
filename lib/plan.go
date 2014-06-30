@@ -5,7 +5,6 @@ import (
 	"gopkg.in/yaml.v1"
 )
 
-// TaskVars hold any variables that is overridden through the cli
 type TaskVars map[string]string
 
 // A plan is a collection of tasks.
@@ -21,12 +20,6 @@ type Plan struct {
 	tasks  []map[string]string `yaml:"tasks"`
 }
 
-const (
-	ECHO          = 53
-	TTY_OP_ISPEED = 128
-	TTY_OP_OSPEED = 129
-)
-
 func mergeMap(source *TaskVars, destination *TaskVars) {
 	src := *source
 	dst := *destination
@@ -35,7 +28,10 @@ func mergeMap(source *TaskVars, destination *TaskVars) {
 	}
 }
 
-func NewPlan(planBuf []byte, overrides *TaskVars) (*Plan, error) {
+// Returns a new plan with a collection of tasks. The planBuf should be a valid
+// 'yaml' representation. Additionally, this function also takes in any variable
+// overrides that takes precedence over the variables present in the plan.
+func NewPlanFromYAML(planBuf []byte, overrides *TaskVars) (*Plan, error) {
 	plan := Plan{}
 	err := yaml.Unmarshal(planBuf, &plan)
 	if err != nil {
@@ -59,6 +55,7 @@ func (plan *Plan) parseTasks() {
 	}
 }
 
+// Prints the summary of the Plan execution across all the hosts
 func (plan *Plan) PrintReport() {
 	var counts = make(map[string]int)
 
@@ -88,6 +85,8 @@ func (plan *Plan) PrintReport() {
 	fmt.Printf("Tasks attempted (all hosts):\t%d\n", len(plan.report))
 }
 
+// Mark a given task's status.
+// NOTE: Skipped tasks are not tracked here.
 func (plan *Plan) SaveStatus(task *Task, status string) {
 	plan.report[task.Id] = status
 }
