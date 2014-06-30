@@ -121,8 +121,7 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for _, task := range plan.Tasks {
-				task.Prepare(plan.Vars)
-				status := machine.RunTask(&task)
+				status := task.Run(machine, plan.Vars)
 				plan.SaveStatus(&task, status)
 			}
 		}()

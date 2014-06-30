@@ -8,13 +8,17 @@ hosts:
 tasks:
   - name: Checking if package {{ vars.service }} exists
     action: sudo /sbin/service {{ vars.service }} status
+    ignore_errors: true
     
   - name: Get uname
     action: uname -a
 
-  - name: Task that will most definitely error out
+  - name: Task that will most definitely error out which we will ignore
     action: cat non_existent_file
     ignore_errors: true
+
+  - name: "Pinging myself at {{ machine.Hostname }}"
+    action: ping -c 3 {{ machine.Hostname }}
 
 
 
