@@ -1,3 +1,6 @@
+---
+name: "Sample plan showing the usage of henchman"  
+  
 vars:
   service: iptables
   
@@ -19,6 +22,13 @@ tasks:
 
   - name: "Pinging myself at {{ machine.Hostname }}"
     action: ping -c 3 {{ machine.Hostname }}
+
+  - name: "Task which is gonna fail"
+    action: cat non_existent_file
+
+  - name: "This task won't execute"
+    action: ls -al
+    
 
 
 
