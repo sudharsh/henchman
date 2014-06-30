@@ -123,6 +123,10 @@ func main() {
 			for _, task := range plan.Tasks {
 				status := task.Run(machine, plan.Vars)
 				plan.SaveStatus(&task, status)
+				if status == "failure" {
+					log.Printf("Task was unsuccessful: %s\n", task.Id)
+					break
+				}
 			}
 		}()
 	}
