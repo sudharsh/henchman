@@ -16,7 +16,7 @@
     <header>
       <div class="container">
         <h1>Henchman</h1>
-        <h2>Orchestration tool, inspired by ansible.</h2>
+        <h2>Orchestration and Automation Tool.</h2>
 
         <section id="downloads">
           <a href="https://github.com/sudharsh/henchman/zipball/master" class="btn">Download as .zip</a>
@@ -32,17 +32,36 @@
 <a name="henchman-" class="anchor" href="#henchman-"><span class="octicon octicon-link"></span></a>henchman <a href="https://travis-ci.org/sudharsh/henchman"><img src="https://travis-ci.org/sudharsh/henchman.svg?branch=master" alt="Build Status"></a>
 </h1>
 
-<p>Orchestration tool, inspired by Ansible, but with less dependencies. </p>
+<h2>
+<a name="what" class="anchor" href="#what"><span class="octicon octicon-link"></span></a>What</h2>
+
+<p>Henchman is an orchestration and automation tool, inspired by Ansible. Henchman executes a <em>plan</em> (a collection of <em>tasks</em>) on a given set of machines. </p>
+
+<h2>
+<a name="why" class="anchor" href="#why"><span class="octicon octicon-link"></span></a>Why</h2>
+
+<p>For fun :). Although, python and ruby are awesome as systems languages, I feel Golang fits this 'get shit done' niche more.
+Deployments of tools written in Golang are less painful which is a big win in large scale environments where we've had our share of incompatibilities with ruby and python dependencies. </p>
+
+<h2>
+<a name="current-state" class="anchor" href="#current-state"><span class="octicon octicon-link"></span></a>Current State</h2>
+
+<p>Currently, <code>henchman</code> isn't even close to ansible in terms of functionality. For now, it dispatches shell commands on the given hosts and has rudimentary support for variables.
+The immediate goals are to nail down the <em>plan</em> format and worry about the modules implementation next. Eventually, henchman modules can be written in any language as long as they output to <code>stdout</code>, just like ansible.</p>
 
 <h2>
 <a name="building" class="anchor" href="#building"><span class="octicon octicon-link"></span></a>Building</h2>
 
 <ul>
+<li>Clone this repository</li>
 <li><code>make all</code></li>
 <li><code>bin/henchman -h</code></li>
-<li>See <code>samples/plan.yaml</code>
+<li>Refer <code>samples/plan.yaml</code>
 </li>
-</ul>
+</ul><h2>
+<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
+
+<p>Github PRs away!</p>
       </section>
     </div>
 
