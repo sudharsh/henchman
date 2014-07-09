@@ -31,7 +31,7 @@ func prepareTemplate(data string, vars *TaskVars, machine *Machine) (string, err
 		panic(err)
 	}
 	ctxt := pongo2.Context{"vars": vars, "machine": machine}
-	return tmpl.Execute(&ctxt)
+	return tmpl.Execute(ctxt)
 }
 
 // Renders the template parts in the task field.
