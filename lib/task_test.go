@@ -5,7 +5,12 @@ import (
 )
 
 func TestPrepareTask(t *testing.T) {
-	task := Task{"fake-uuid", "The {{ vars.variable1 }}", "{{ vars.variable2 }}:{{ machine.Hostname }}", false}
+	task := Task{"fake-uuid",
+		"The {{ vars.variable1 }}",
+		"{{ vars.variable2 }}:{{ machine.Hostname }}",
+		false,
+		false,
+	}
 	machine := Machine{"foobar", nil}
 
 	vars := make(TaskVars)
