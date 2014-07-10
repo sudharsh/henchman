@@ -3,6 +3,8 @@ package henchman
 import (
 	"bytes"
 	"log"
+	"os/exec"
+	"strings"
 
 	"code.google.com/p/go.crypto/ssh"
 )
@@ -23,6 +25,19 @@ func Machines(hostnames []string, config *ssh.ClientConfig) []*Machine {
 // Exec this action on the machine
 // TODO: Handle modules here
 func (machine *Machine) Exec(action string) (*bytes.Buffer, error) {
+
+	var b bytes.Buffer
+
+	if machine.Hostname == "127.0.0.1" {
+		log.Printf("Machines and action: %s\n", action)
+		commands := strings.Split(action, " ")
+		cmd := exec.Command(commands[0], commands[1:]...)
+		cmd.Stdout = &b
+		cmd.Stderr = &b
+		err := cmd.Run()
+		return &b, err
+	}
+
 	client, err := ssh.Dial("tcp", machine.Hostname+":22", machine.SSHConfig)
 	if err != nil {
 		log.Fatalf("Failed to dial: " + err.Error())
@@ -42,8 +57,7 @@ func (machine *Machine) Exec(action string) (*bytes.Buffer, error) {
 	if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
 		log.Fatalf("request for pseudo terminal failed: " + err.Error())
 	}
-
-	var b bytes.Buffer
 	session.Stdout = &b
+	session.Stderr = &b
 	return &b, session.Run(action)
 }

@@ -23,6 +23,7 @@ type Task struct {
 	Name         string
 	Action       string
 	IgnoreErrors bool `yaml:"ignore_errors"`
+	LocalAction  bool `yaml:"local"`
 }
 
 func prepareTemplate(data string, vars *TaskVars, machine *Machine) (string, error) {

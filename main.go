@@ -126,13 +126,20 @@ func main() {
 	// Note the tasks themselves in plan are executed sequentially.
 	wg := new(sync.WaitGroup)
 	machines := henchman.Machines(plan.Hosts, config)
+	localhost := henchman.Machine{"127.0.0.1", nil}
 	for _, _machine := range machines {
 		machine := _machine
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for _, task := range plan.Tasks {
-				status := task.Run(machine, plan.Vars)
+				var status string
+				if task.LocalAction {
+					log.Printf("Local action detected\n")
+					status = task.Run(&localhost, plan.Vars)
+				} else {
+					status = task.Run(machine, plan.Vars)
+				}
 				plan.SaveStatus(&task, status)
 				if status == "failure" {
 					log.Printf("Task was unsuccessful: %s\n", task.Id)

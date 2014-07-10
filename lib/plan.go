@@ -51,6 +51,8 @@ func (plan *Plan) parseTasks() {
 		task.Action = t["action"]
 		_, present := t["ignore_errors"]
 		task.IgnoreErrors = bool(present)
+		_, present = t["local"]
+		task.LocalAction = bool(present)
 		plan.Tasks = append(plan.Tasks, task)
 	}
 }
