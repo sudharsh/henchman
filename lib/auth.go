@@ -5,6 +5,12 @@ import (
 	"io/ioutil"
 )
 
+const (
+	ECHO          = 53
+	TTY_OP_ISPEED = 128
+	TTY_OP_OSPEED = 129
+)
+
 func loadPEM(file string) (ssh.Signer, error) {
 	buf, err := ioutil.ReadFile(file)
 	if err != nil {

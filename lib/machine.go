@@ -7,12 +7,6 @@ import (
 	"code.google.com/p/go.crypto/ssh"
 )
 
-const (
-	ECHO          = 53
-	TTY_OP_ISPEED = 128
-	TTY_OP_OSPEED = 129
-)
-
 type Machine struct {
 	Hostname  string
 	SSHConfig *ssh.ClientConfig
