@@ -13,12 +13,13 @@ tasks:
     action: ls 
     local: true
   
-  - name: Checking if package {{ vars.service }} exists
-    action: sudo /sbin/service {{ vars.service }} status
-    ignore_errors: true
-    
   - name: Get uname
     action: uname -a
+
+  - name: Checking if package {{ vars.service }} exists
+    action: sudo /sbin/service {{ vars.service }} status
+    ignore_errors: true  
+
 
   - name: Task that will most definitely error out which we will ignore
     action: cat non_existent_file

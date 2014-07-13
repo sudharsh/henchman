@@ -54,7 +54,7 @@ func (task *Task) prepare(vars *TaskVars, machine *Machine) {
 // tasks down the `plan` can see any additions/updates.
 func (task *Task) Run(machine *Machine, vars *TaskVars) string {
 	task.prepare(vars, machine)
-	log.Printf("%s: %s '%s'\n", task.Id, machine.Hostname, task.Name)
+	log.Printf("%s: %s:%d '%s'\n", task.Id, machine.Hostname, machine.Port, task.Name)
 	out, err := machine.Exec(task.Action)
 	var taskStatus string = "success"
 	if err != nil {

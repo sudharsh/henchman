@@ -3,6 +3,7 @@ package henchman
 import (
 	"fmt"
 	"gopkg.in/yaml.v1"
+	"strings"
 )
 
 type TaskVars map[string]string
@@ -34,13 +35,22 @@ func mergeMap(source *TaskVars, destination *TaskVars) {
 func NewPlanFromYAML(planBuf []byte, overrides *TaskVars) (*Plan, error) {
 	plan := Plan{}
 	err := yaml.Unmarshal(planBuf, &plan)
+	if plan.Vars == nil {
+		_vars := make(TaskVars)
+		plan.Vars = &_vars
+	}
 	if err != nil {
 		return nil, err
 	}
 	if overrides != nil {
 		mergeMap(overrides, plan.Vars)
+		if hosts, present := (*overrides)["hosts"]; present {
+			plan.Hosts = strings.Split(hosts, ",")
+		}
+
 	}
 	plan.report = make(map[string]string)
+	plan.parseTasks()
 	return &plan, nil
 }
 

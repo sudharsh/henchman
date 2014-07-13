@@ -34,6 +34,34 @@ tasks:
 	}
 }
 
+func TestParsePlanWithHostOverrides(t *testing.T) {
+	plan_string := `---
+name: "Sample plan"
+hosts:
+  - "127.0.0.1:22"
+  - 192.168.1.2  
+tasks:
+  - name: Sample task that does nothing
+    action: ls -al
+  - name: Second task
+    action: echo 'foo'
+    ignore_errors: true
+ `
+	tv := make(TaskVars)
+	tv["hosts"] = "overridden1,overridden2,overridden3"
+
+	plan, err := NewPlanFromYAML([]byte(plan_string), &tv)
+	if err != nil {
+		panic(err)
+	}
+	if len(plan.Hosts) != 3 {
+		t.Errorf("Number of hosts mismatch. Parsed %d hosts instead\n", len(plan.Hosts))
+	}
+	if plan.Hosts[0] != "overridden1" {
+		t.Errorf("Hosts mismatch. Parsed %s hosts instead\n", plan.Hosts[0])
+	}
+}
+
 func TestParsePlanWithOverrides(t *testing.T) {
 	plan_string := `---
 name: Sample plan
