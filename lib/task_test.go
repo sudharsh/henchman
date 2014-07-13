@@ -25,3 +25,22 @@ func TestPrepareTask(t *testing.T) {
 		t.Errorf("Template execution for Task.Action failed. Got - %s\n", task.Action)
 	}
 }
+
+func TestRun(t *testing.T) {
+	task := Task{"fake-uuid",
+		"The {{ vars.variable1 }}",
+		"{{ vars.variable2 }}",
+		false,
+		false,
+	}
+	machine := Machine{"127.0.0.1", 0, nil}
+	vars := make(TaskVars)
+
+	vars["variable1"] = "foo"
+	vars["variable2"] = "ls -al"
+
+	status := task.Run(&machine, &vars)
+	if status != "success" {
+		t.Errorf("Task execution failed. Got %s\n", status)
+	}
+}
