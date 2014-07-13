@@ -126,7 +126,7 @@ func main() {
 	// Note the tasks themselves in plan are executed sequentially.
 	wg := new(sync.WaitGroup)
 	machines := henchman.Machines(plan.Hosts, config)
-	localhost := henchman.Machine{"127.0.0.1", nil}
+	localhost := henchman.Machine{"127.0.0.1", 0, nil}
 	for _, _machine := range machines {
 		machine := _machine
 		wg.Add(1)

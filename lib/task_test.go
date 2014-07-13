@@ -11,7 +11,7 @@ func TestPrepareTask(t *testing.T) {
 		false,
 		false,
 	}
-	machine := Machine{"foobar", nil}
+	machine := Machine{"foobar", 22, nil}
 
 	vars := make(TaskVars)
 	vars["variable1"] = "foo"

@@ -6,7 +6,8 @@ func TestParsePlanWithoutOverrides(t *testing.T) {
 	plan_string := `---
 name: "Sample plan"
 hosts:
-  - 127.0.0.1
+  - "127.0.0.1:22"
+  - 192.168.1.2  
 tasks:
   - name: Sample task that does nothing
     action: ls -al
@@ -18,7 +19,7 @@ tasks:
 	if err != nil {
 		panic(err)
 	}
-	if len(plan.Hosts) != 1 {
+	if len(plan.Hosts) != 2 {
 		t.Errorf("Number of hosts mismatch. Parsed %d hosts instead\n", len(plan.Hosts))
 	}
 	if len(plan.Tasks) != 2 {
