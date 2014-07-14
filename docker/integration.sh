@@ -31,7 +31,7 @@ echo "Starting all the SSHD containers"
 HENCHMAN_HOSTS=""
 for i in `seq 1 ${NUM_HOSTS}`
 do
-    ssh_port="${DOCKER_HOSTNAME}:320${i}"
+    ssh_port="${DOCKER_HOSTNAME}:32${i}"
     docker run -d -p $ssh_port:22 --name sshd${i} -t sudharsh/henchman:hosts
     if [[ $HENCHMAN_HOSTS == "" ]]
     then
@@ -43,7 +43,8 @@ done
 echo "Started ${NUM_HOSTS} containers"
 
 echo "Invoking henchman with the plan: $HENCHMAN_PLAN"
-bin/henchman -user root -private-keyfile docker/cmdcentre/insecure_private_key -args "hosts=$HENCHMAN_HOSTS" ${HENCHMAN_PLAN} 2> /dev/null
+
+HENCHMAN_MODULES_PATH="/tmp" bin/henchman -user root -private-keyfile docker/cmdcentre/insecure_private_key -args "hosts=$HENCHMAN_HOSTS" ${HENCHMAN_PLAN} 2> /dev/null
 echo "*******"
 
 rv=$?
