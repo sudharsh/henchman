@@ -39,8 +39,11 @@ func TestRun(t *testing.T) {
 	vars["variable1"] = "foo"
 	vars["variable2"] = "ls -al"
 
-	status := task.Run(&machine, &vars)
-	if status != "success" {
+	status, err := task.Run(&machine, &vars)
+	if err != nil {
+		t.Errorf("There shouldn't have been any error for this task")
+	}
+	if status.Status != "success" {
 		t.Errorf("Task execution failed. Got %s\n", status)
 	}
 }

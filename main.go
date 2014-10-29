@@ -68,7 +68,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Couldn't stat modules path '%s'\n", modulesDir)
 	}
-
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [args] <plan>\n\n", os.Args[0])
 		flag.PrintDefaults()
@@ -133,15 +132,19 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for _, task := range plan.Tasks {
-				var status string
+				var status *henchman.TaskStatus
+				var err error
 				if task.LocalAction {
 					log.Printf("Local action detected\n")
-					status = task.Run(&localhost, plan.Vars)
+					status, err = task.Run(&localhost, plan.Vars)
 				} else {
-					status = task.Run(machine, plan.Vars)
+					status, err = task.Run(machine, plan.Vars)
 				}
-				plan.SaveStatus(&task, status)
-				if status == "failure" {
+				plan.SaveStatus(&task, status.Status)
+				if err != nil {
+					log.Printf("Error when executing task: %s\n", err.Error())
+				}
+				if status.Status == "failure" {
 					log.Printf("Task was unsuccessful: %s\n", task.Id)
 					break
 				}
