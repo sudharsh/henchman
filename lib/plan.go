@@ -104,7 +104,7 @@ func (plan *Plan) SaveStatus(task *Task, status string) {
 }
 
 func (plan *Plan) String() string {
-	status := "Plan '%s':"
+	status := fmt.Sprintf("Plan '%s' with %d tasks:", plan.Name, len(plan.Tasks))
 	for k, v := range plan.report {
 		status = status + fmt.Sprintf(" %s - %s;", k, v)
 	}
