@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type TaskVars map[string]string
+type TaskVars map[string]interface{}
 
 // A plan is a collection of tasks.
 // All the tasks are executed serially, although the same plan
@@ -45,7 +45,7 @@ func NewPlanFromYAML(planBuf []byte, overrides *TaskVars) (*Plan, error) {
 	if overrides != nil {
 		mergeMap(overrides, plan.Vars)
 		if hosts, present := (*overrides)["hosts"]; present {
-			plan.Hosts = strings.Split(hosts, ",")
+			plan.Hosts = strings.Split(hosts.(string), ",")
 		}
 
 	}
@@ -101,4 +101,12 @@ func (plan *Plan) PrintReport() {
 // NOTE: Skipped tasks are not tracked here.
 func (plan *Plan) SaveStatus(task *Task, status string) {
 	plan.report[task.Id] = status
+}
+
+func (plan *Plan) String() string {
+	status := "Plan '%s':"
+	for k, v := range plan.report {
+		status = status + fmt.Sprintf(" %s - %s;", k, v)
+	}
+	return status
 }

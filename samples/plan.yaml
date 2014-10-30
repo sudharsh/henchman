@@ -3,6 +3,7 @@ name: "Sample plan showing the usage of henchman"
   
 vars:
   service: iptables
+  keyfile: "~/.ssh/id_rsa.pub
   
 hosts:
   - 192.168.33.11

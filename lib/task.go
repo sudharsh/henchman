@@ -16,9 +16,8 @@ var statuses = map[string]string{
 	"failure": ansi.ColorCode("red"),
 }
 
-
 type TaskStatus struct {
-	Status string
+	Status  string
 	Message string
 }
 
@@ -58,7 +57,7 @@ func (task *Task) prepare(vars *TaskVars, machine *Machine) {
 
 // Runs the task on the machine. The task might mutate `vars` so that other
 // tasks down the `plan` can see any additions/updates.
-func (task *Task) Run(machine *Machine, vars *TaskVars) (*TaskStatus, error)  {
+func (task *Task) Run(machine *Machine, vars *TaskVars) (*TaskStatus, error) {
 	task.prepare(vars, machine)
 	log.Printf("%s: %s:%d '%s'\n", task.Id, machine.Hostname, machine.Port, task.Name)
 	out, err := machine.Exec(task.Action)
@@ -70,7 +69,7 @@ func (task *Task) Run(machine *Machine, vars *TaskVars) (*TaskStatus, error)  {
 			taskStatus = "failure"
 		}
 	}
-	status := TaskStatus{ taskStatus, out.String() }
+	status := TaskStatus{taskStatus, out.String()}
 	escapeCode := statuses[taskStatus]
 	var reset string = statuses["reset"]
 	log.Printf("%s: %s [%s] - %s", task.Id, escapeCode, status.Status, status.Message+reset)
