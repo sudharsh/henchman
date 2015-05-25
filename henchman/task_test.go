@@ -2,6 +2,8 @@ package henchman
 
 import (
 	"testing"
+
+	"github.com/sudharsh/henchman/transport"
 )
 
 func TestPrepareTask(t *testing.T) {
@@ -11,7 +13,9 @@ func TestPrepareTask(t *testing.T) {
 		false,
 		false,
 	}
-	machine := Machine{"foobar", 22, nil}
+
+	local, _ := transport.NewLocal(nil)
+	machine := Machine{"foobar", local}
 
 	vars := make(TaskVars)
 	vars["variable1"] = "foo"
@@ -33,7 +37,9 @@ func TestRun(t *testing.T) {
 		false,
 		false,
 	}
-	machine := Machine{"127.0.0.1", 0, nil}
+
+	local, _ := transport.NewLocal(nil)
+	machine := Machine{"127.0.0.1", local}
 	vars := make(TaskVars)
 
 	vars["variable1"] = "foo"

@@ -11,16 +11,21 @@ import (
 	"strings"
 	"sync"
 
-	"code.google.com/p/go.crypto/ssh"
 	"code.google.com/p/gopass"
 
-	"github.com/sudharsh/henchman/lib"
+	"github.com/sudharsh/henchman/henchman"
+	"github.com/sudharsh/henchman/transport"
 )
 
 func currentUsername() *user.User {
 	u, err := user.Current()
 	if err != nil {
-		panic("Couldn't get current username: " + err.Error())
+		log.Printf("Couldn't get current username: %s. Assuming root" + err.Error())
+		u, err = user.Lookup("root")
+		if err != nil {
+			log.Print(err.Error())
+		}
+		return u
 	}
 	return u
 }
@@ -58,6 +63,25 @@ func validateModulesPath() (string, error) {
 	return *modulesDir, err
 }
 
+func localhost() *henchman.Machine {
+	tc := make(transport.TransportConfig)
+	local, _ := transport.NewLocal(&tc)
+	localhost := henchman.Machine{}
+	localhost.Hostname = "127.0.0.1"
+	localhost.Transport = local
+	return &localhost
+}
+
+func sshTransport(_tc *transport.TransportConfig, hostname string) *transport.SSHTransport {
+	tc := *_tc
+	tc["hostname"] = hostname
+	ssht, err := transport.NewSSH(&tc)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+	return ssht
+}
+
 func main() {
 	username := flag.String("user", currentUsername().Username, "User to run as")
 	usePassword := flag.Bool("password", false, "Use password authentication")
@@ -79,38 +103,29 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-
 	if *username == "" {
 		fmt.Fprintf(os.Stderr, "Missing username")
 		os.Exit(1)
 	}
-
 	// We support two SSH authentications methods for now
 	// password and client key bases. Both are mutually exclusive and password takes
 	// higher precedence
-	var sshAuth ssh.AuthMethod
+	tc := make(transport.TransportConfig)
+	tc["username"] = *username
 	if *usePassword {
 		var password string
 		if password, err = gopass.GetPass("Password:"); err != nil {
 			log.Fatalf("Couldn't get password: " + err.Error())
 			os.Exit(1)
 		}
-		sshAuth, err = henchman.PasswordAuth(password)
+		tc["password"] = password
 	} else {
-		sshAuth, err = henchman.ClientKeyAuth(*keyfile)
-	}
-	if err != nil {
-		log.Fatalf("SSH Auth prep failed: " + err.Error())
-	}
-	config := &ssh.ClientConfig{
-		User: *username,
-		Auth: []ssh.AuthMethod{sshAuth},
+		tc["keyfile"] = *keyfile
 	}
 
 	planBuf, err := ioutil.ReadFile(planFile)
 	if err != nil {
 		log.Fatalf("Error reading plan - %s\n", planFile)
-		os.Exit(1)
 	}
 
 	var plan *henchman.Plan
@@ -121,22 +136,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	local := localhost()
 	// Execute the same plan concurrently across all the machines.
 	// Note the tasks themselves in plan are executed sequentially.
 	wg := new(sync.WaitGroup)
-	machines := henchman.Machines(plan.Hosts, config)
-	localhost := henchman.Machine{"127.0.0.1", 0, nil}
-	for _, _machine := range machines {
-		machine := _machine
+	for _, hostname := range plan.Hosts {
+		machine := henchman.Machine{}
+		machine.Hostname = hostname
+		machine.Transport = sshTransport(&tc, hostname)
 		wg.Add(1)
-		go func() {
+		go func(machine *henchman.Machine) {
 			defer wg.Done()
 			for _, task := range plan.Tasks {
 				var status *henchman.TaskStatus
 				var err error
 				if task.LocalAction {
 					log.Printf("Local action detected\n")
-					status, err = task.Run(&localhost, plan.Vars)
+					status, err = task.Run(local, plan.Vars)
 				} else {
 					status, err = task.Run(machine, plan.Vars)
 				}
@@ -149,7 +165,7 @@ func main() {
 					break
 				}
 			}
-		}()
+		}(&machine)
 	}
 	wg.Wait()
 	plan.PrintReport()

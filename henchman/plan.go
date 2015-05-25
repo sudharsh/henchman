@@ -47,7 +47,6 @@ func NewPlanFromYAML(planBuf []byte, overrides *TaskVars) (*Plan, error) {
 		if hosts, present := (*overrides)["hosts"]; present {
 			plan.Hosts = strings.Split(hosts.(string), ",")
 		}
-
 	}
 	plan.report = make(map[string]string)
 	plan.parseTasks()
