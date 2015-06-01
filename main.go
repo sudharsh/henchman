@@ -14,7 +14,6 @@ import (
 	"code.google.com/p/gopass"
 
 	"github.com/sudharsh/henchman/henchman"
-	"github.com/sudharsh/henchman/transport"
 )
 
 func currentUsername() *user.User {
@@ -64,18 +63,18 @@ func validateModulesPath() (string, error) {
 }
 
 func localhost() *henchman.Machine {
-	tc := make(transport.TransportConfig)
-	local, _ := transport.NewLocal(&tc)
+	tc := make(henchman.TransportConfig)
+	local, _ := henchman.NewLocal(&tc)
 	localhost := henchman.Machine{}
 	localhost.Hostname = "127.0.0.1"
 	localhost.Transport = local
 	return &localhost
 }
 
-func sshTransport(_tc *transport.TransportConfig, hostname string) *transport.SSHTransport {
+func sshTransport(_tc *henchman.TransportConfig, hostname string) *henchman.SSHTransport {
 	tc := *_tc
 	tc["hostname"] = hostname
-	ssht, err := transport.NewSSH(&tc)
+	ssht, err := henchman.NewSSH(&tc)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
@@ -110,7 +109,7 @@ func main() {
 	// We support two SSH authentications methods for now
 	// password and client key bases. Both are mutually exclusive and password takes
 	// higher precedence
-	tc := make(transport.TransportConfig)
+	tc := make(henchman.TransportConfig)
 	tc["username"] = *username
 	if *usePassword {
 		var password string
