@@ -2,8 +2,6 @@ package henchman
 
 import (
 	"testing"
-
-	"github.com/sudharsh/henchman/henchman"
 )
 
 func TestPrepareTask(t *testing.T) {
@@ -14,7 +12,7 @@ func TestPrepareTask(t *testing.T) {
 		false,
 	}
 
-	local, _ := henchman.NewLocal(nil)
+	local, _ := NewLocal(nil)
 	machine := Machine{"foobar", local}
 
 	vars := make(TaskVars)
@@ -38,7 +36,7 @@ func TestRun(t *testing.T) {
 		false,
 	}
 
-	local, _ := henchman.NewLocal(nil)
+	local, _ := NewLocal(nil)
 	machine := Machine{"127.0.0.1", local}
 	vars := make(TaskVars)
 
