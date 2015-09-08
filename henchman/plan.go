@@ -3,7 +3,7 @@ package henchman
 import (
 	"fmt"
 	"gopkg.in/yaml.v1"
-	"strings"
+	//"strings"
 )
 
 type TaskVars map[string]interface{}
@@ -29,10 +29,45 @@ func mergeMap(source *TaskVars, destination *TaskVars) {
 	}
 }
 
-// Returns a new plan with a collection of tasks. The planBuf should be a valid
+/*
+func PreparePlan(hostsFile string, sectionName string, planFile string) string {
+	if hostsFile != nil {
+		// read hostsFile
+		hostsFileBuf, err := ioutil.ReadFile(hostsFile)
+		if err != nil {
+			fmt.Println("Error in reading hostsFile in PreparePlan")
+			os.Exit(1)
+		}
+
+		// convert the yaml file into a map of string arrays
+		m := make(map[interface{}][]string)
+		err = yaml.Unmarshal(hostsFileBuf, &m)
+	}
+
+	// empty context struct
+	ctxt := pongo2.Context{}
+
+	// if there is a map of the host names, grab the specified section
+	if m != nil && m[sectionName] != nil {
+		nodeList := m[sectionName]
+		ctxt = ctxt.Update(pongo2.Context{"nodes": nodeList})
+	}
+
+	tmpl, err := pongo2.FromFile(planFile)
+
+	if err != nil {
+		fmt.Println("Error in pongo2 read from file")
+		os.Exit(1)
+	}
+
+	return tmpl.Execute(ctxt)
+}
+*/
+
+// Returns a new plan with a collection of tasks. The planBuf and hostsFileBuf should be a valid
 // 'yaml' representation. Additionally, this function also takes in any variable
 // overrides that takes precedence over the variables present in the plan.
-func NewPlanFromYAML(planBuf []byte, overrides *TaskVars) (*Plan, error) {
+func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (*Plan, error) {
 	plan := Plan{}
 	err := yaml.Unmarshal(planBuf, &plan)
 	if plan.Vars == nil {
@@ -44,8 +79,15 @@ func NewPlanFromYAML(planBuf []byte, overrides *TaskVars) (*Plan, error) {
 	}
 	if overrides != nil {
 		mergeMap(overrides, plan.Vars)
-		if hosts, present := (*overrides)["hosts"]; present {
-			plan.Hosts = strings.Split(hosts.(string), ",")
+		// if a hostsFile is specified, means checks the hosts override to get a list
+		if hostsFileBuf != nil {
+			if hosts, present := (*overrides)["hosts"]; present {
+				hostsMap := make(map[interface{}][]string)
+				err = yaml.Unmarshal(hostsFileBuf, &hostsMap)
+				// should do something if there is an err, will get back to this
+				// should I make this a plus equal?
+				plan.Hosts = hostsMap[hosts]
+			}
 		}
 	}
 	plan.report = make(map[string]string)

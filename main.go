@@ -13,7 +13,7 @@ import (
 
 	"code.google.com/p/gopass"
 
-	"github.com/sudharsh/henchman/henchman"
+	"github.com/jlin21/henchman/henchman"
 )
 
 func currentUsername() *user.User {
@@ -86,6 +86,7 @@ func main() {
 	usePassword := flag.Bool("password", false, "Use password authentication")
 	keyfile := flag.String("private-keyfile", defaultKeyFile(), "Path to the keyfile")
 	extraArgs := flag.String("args", "", "Extra arguments for the plan")
+	hostsFile := flag.String("i", "", "Specify hosts file name")
 
 	modulesDir, err := validateModulesPath()
 	if err != nil {
@@ -127,9 +128,17 @@ func main() {
 		log.Fatalf("Error reading plan - %s\n", planFile)
 	}
 
+	var hostsFileBuf []byte = nil
+	if *hostsFile != "" {
+		hostsFileBuf, err = ioutil.ReadFile(*hostsFile)
+		if err != nil {
+			log.Fatalf("Error reading hosts file - %s\n", *hostsFile)
+		}
+	}
+
 	var plan *henchman.Plan
 	parsedArgs := parseExtraArgs(*extraArgs)
-	plan, err = henchman.NewPlanFromYAML(planBuf, &parsedArgs)
+	plan, err = henchman.NewPlanFromYAML(planBuf, hostsFileBuf, &parsedArgs)
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
