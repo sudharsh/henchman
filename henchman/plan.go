@@ -2,7 +2,9 @@ package henchman
 
 import (
 	"fmt"
+	//"github.com/flosch/pongo2"
 	"gopkg.in/yaml.v1"
+	"io/ioutil"
 	//"strings"
 )
 
@@ -13,12 +15,12 @@ type TaskVars map[string]interface{}
 // is run concurrently on multiple machines
 type Plan struct {
 	Hosts []string
-	Tasks []Task
+	Tasks []Task `yaml:"tasks"`
 	Vars  *TaskVars
 	Name  string
 
 	report map[string]string
-	tasks  []map[string]string `yaml:"tasks"`
+	//tasks  []map[string]string `yaml:"tasks"`
 }
 
 func mergeMap(source *TaskVars, destination *TaskVars) {
@@ -29,47 +31,13 @@ func mergeMap(source *TaskVars, destination *TaskVars) {
 	}
 }
 
-/*
-func PreparePlan(hostsFile string, sectionName string, planFile string) string {
-	if hostsFile != nil {
-		// read hostsFile
-		hostsFileBuf, err := ioutil.ReadFile(hostsFile)
-		if err != nil {
-			fmt.Println("Error in reading hostsFile in PreparePlan")
-			os.Exit(1)
-		}
-
-		// convert the yaml file into a map of string arrays
-		m := make(map[interface{}][]string)
-		err = yaml.Unmarshal(hostsFileBuf, &m)
-	}
-
-	// empty context struct
-	ctxt := pongo2.Context{}
-
-	// if there is a map of the host names, grab the specified section
-	if m != nil && m[sectionName] != nil {
-		nodeList := m[sectionName]
-		ctxt = ctxt.Update(pongo2.Context{"nodes": nodeList})
-	}
-
-	tmpl, err := pongo2.FromFile(planFile)
-
-	if err != nil {
-		fmt.Println("Error in pongo2 read from file")
-		os.Exit(1)
-	}
-
-	return tmpl.Execute(ctxt)
-}
-*/
-
 // Returns a new plan with a collection of tasks. The planBuf and hostsFileBuf should be a valid
 // 'yaml' representation. Additionally, this function also takes in any variable
 // overrides that takes precedence over the variables present in the plan.
 func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (*Plan, error) {
 	plan := Plan{}
 	err := yaml.Unmarshal(planBuf, &plan)
+
 	if plan.Vars == nil {
 		_vars := make(TaskVars)
 		plan.Vars = &_vars
@@ -91,21 +59,69 @@ func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (
 		}
 	}
 	plan.report = make(map[string]string)
-	plan.parseTasks()
+	//fmt.Println(plan.Tasks)
+	//plan.parseTasks()
+
 	return &plan, nil
 }
 
-func (plan *Plan) parseTasks() {
-	for _, t := range plan.tasks {
-		task := Task{}
-		task.Name = t["name"]
-		task.Action = t["action"]
-		_, present := t["ignore_errors"]
-		task.IgnoreErrors = bool(present)
-		_, present = t["local"]
-		task.LocalAction = bool(present)
-		plan.Tasks = append(plan.Tasks, task)
+// change this to be a non-plan function
+// come back to context variable stuff after getting include done
+// look at diagram
+/*
+func (plan *Plan) PrepareTasks(tasks []Task, vars *TaskVars, machine Machine) ([]Task, error) {
+	tmpl, err := pongo2.FromFile(planFile)
+	if err != nil {
+		return err
 	}
+
+	ctxt := pongo2.Context{"vars": plan.Vars, "machine": machine}
+
+	out, err := tmpl.Execute(ctxt)
+	if err != nil {
+		return err
+	}
+
+	planBuf := []byte(out)
+
+	newPlan := Plan{}
+	err = yaml.Unmarshal(planBuf, &newPlan)
+	if err != nil {
+		return err
+	}
+
+	plan.Tasks = newPlan.Tasks
+
+	return nil, nil
+}
+*/
+// Updates the task list if there is a valid include param
+// TODO: if there's a vars param too use the template in
+//       the context of that vars,  currently it's using "global"
+//       vars.
+func UpdateTasks(tasks []Task, ndx int) ([]Task, error) {
+	includeBuf, err := ioutil.ReadFile(tasks[ndx].Include)
+	if err != nil {
+		return nil, err
+	}
+
+	tmpPlan := Plan{}
+	err = yaml.Unmarshal(includeBuf, &tmpPlan)
+	if err != nil {
+		return nil, err
+	}
+
+	//mergeMap(plan.Vars, tmpPlan.Vars)
+	/*tmpPlan.Vars = plan.Vars
+	err = tmpPlan.PrepareTasks(plan.Tasks[ndx].Include, machine)
+	if err != nil {
+		return err
+	}*/
+
+	newTasks := tmpPlan.Tasks
+	tasks = append(tasks[:ndx+1], append(newTasks, tasks[ndx+1:]...)...)
+
+	return tasks, nil
 }
 
 // Prints the summary of the Plan execution across all the hosts

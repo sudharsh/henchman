@@ -7,11 +7,15 @@ vars:
   
 hosts:
  - 192.168.33.10
+ - {{ group_name }}
 
 tasks:
   - name: Local actions
     action: ls 
     local: true
+  
+  - name: All files for Jordan
+    action: ls | grep {{ name }} 
 
   - name: "Pinging myself at {{ machine.Hostname }}"
     action: ping -c 3 {{ machine.Hostname }}

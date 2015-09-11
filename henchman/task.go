@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"code.google.com/p/go-uuid/uuid"
-	"github.com/flosch/pongo2"
+	//"github.com/flosch/pongo2"
 
 	"github.com/sudharsh/henchman/ansi"
 )
@@ -26,10 +26,13 @@ type Task struct {
 	Id           string
 	Name         string
 	Action       string
+	Register     string
+	Include      string
 	IgnoreErrors bool `yaml:"ignore_errors"`
 	LocalAction  bool `yaml:"local"`
 }
 
+/*
 func prepareTemplate(data string, vars *TaskVars, machine *Machine) (string, error) {
 	tmpl, err := pongo2.FromString(data)
 	if err != nil {
@@ -53,11 +56,12 @@ func (task *Task) prepare(vars *TaskVars, machine *Machine) {
 		panic(err)
 	}
 }
-
+*/
 // Runs the task on the machine. The task might mutate `vars` so that other
 // tasks down the `plan` can see any additions/updates.
 func (task *Task) Run(machine *Machine, vars *TaskVars) (*TaskStatus, error) {
-	task.prepare(vars, machine)
+	//task.prepare(vars, machine)
+	task.Id = uuid.New()
 	out, err := machine.Transport.Exec(task.Action)
 	var taskStatus string = "success"
 	if err != nil {

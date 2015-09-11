@@ -152,25 +152,47 @@ func main() {
 		machine := henchman.Machine{}
 		machine.Hostname = hostname
 		machine.Transport = sshTransport(&tc, hostname)
+
+		//renders all tasks in the plan file
+		//plan.PrepareTasks(planFile, machine)
+
 		wg.Add(1)
 		go func(machine *henchman.Machine) {
 			defer wg.Done()
-			for _, task := range plan.Tasks {
+
+			tasks := plan.Tasks
+			for ndx := 0; ndx < len(tasks); ndx++ {
 				var status *henchman.TaskStatus
 				var err error
-				if task.LocalAction {
-					log.Printf("Local action detected\n")
-					status, err = task.Run(local, plan.Vars)
+				task := tasks[ndx]
+
+				// if there is a valid include field within task
+				//    update task list
+				// else
+				//    do standard task run procedure
+				if task.Include != "" {
+					tasks, err = henchman.UpdateTasks(tasks, ndx)
+					if err != nil {
+						fmt.Println("FUCK")
+						fmt.Println(err)
+					}
+					//fmt.Println("TASK HAS BEEN UPDATED")
+					//fmt.Println(tasks)
 				} else {
-					status, err = task.Run(machine, plan.Vars)
-				}
-				plan.SaveStatus(&task, status.Status)
-				if err != nil {
-					log.Printf("Error when executing task: %s\n", err.Error())
-				}
-				if status.Status == "failure" {
-					log.Printf("Task was unsuccessful: %s\n", task.Id)
-					break
+					if tasks[ndx].LocalAction {
+						log.Printf("Local action detected\n")
+						status, err = task.Run(local, plan.Vars)
+					} else {
+						status, err = task.Run(machine, plan.Vars)
+					}
+					plan.SaveStatus(&task, status.Status)
+					if err != nil {
+						log.Printf("Error when executing task: %s\n", err.Error())
+					}
+					if status.Status == "failure" {
+						log.Printf("Task was unsuccessful: %s\n", task.Id)
+						break
+					}
 				}
 			}
 		}(&machine)
