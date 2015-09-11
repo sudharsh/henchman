@@ -19,6 +19,3 @@ tasks:
 
   - name: "Pinging myself at {{ machine.Hostname }}"
     action: ping -c 3 {{ machine.Hostname }}
-
-
-

@@ -7,3 +7,7 @@ tasks:
 
   - name: Echo "{{ vars.service }}" 
     action: echo "{{ vars.service }} at {{ machine.Hostname}}" 
+   
+  - include: samples/tasks2.yaml
+    vars:
+      tmp: dunThinkSo

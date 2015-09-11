@@ -1,0 +1,11 @@
+tasks:
+  - name: Echo "{{ vars.service }}" 
+    action: echo "still {{ vars.service }} at {{ machine.Hostname}}" 
+
+  - include: samples/tasks3.yaml
+    vars:
+      service: heyooooyoo
+      tmp: cryForMeChild
+
+  - name: Echo "{{ vars.service }}" 
+    action: echo "round 2 {{ vars.service }} at {{ machine.Hostname}}" 

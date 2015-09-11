@@ -28,6 +28,8 @@ type Task struct {
 	Action       string
 	Register     string
 	Include      string
+	When         string
+	Vars         *TaskVars
 	IgnoreErrors bool `yaml:"ignore_errors"`
 	LocalAction  bool `yaml:"local"`
 }

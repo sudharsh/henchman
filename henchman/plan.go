@@ -2,7 +2,7 @@ package henchman
 
 import (
 	"fmt"
-	//"github.com/flosch/pongo2"
+	"github.com/flosch/pongo2"
 	"gopkg.in/yaml.v1"
 	"io/ioutil"
 	//"strings"
@@ -23,11 +23,17 @@ type Plan struct {
 	//tasks  []map[string]string `yaml:"tasks"`
 }
 
-func mergeMap(source *TaskVars, destination *TaskVars) {
+// source values will override dest values override is true
+// else dest values will not be overridden
+func mergeMap(source *TaskVars, destination *TaskVars, override bool) {
 	src := *source
 	dst := *destination
 	for variable, value := range src {
-		dst[variable] = value
+		if override == true {
+			dst[variable] = value
+		} else if _, present := dst[variable]; !present {
+			dst[variable] = value
+		}
 	}
 }
 
@@ -45,8 +51,9 @@ func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (
 	if err != nil {
 		return nil, err
 	}
+
 	if overrides != nil {
-		mergeMap(overrides, plan.Vars)
+		mergeMap(overrides, plan.Vars, true)
 		// if a hostsFile is specified, means checks the hosts override to get a list
 		if hostsFileBuf != nil {
 			if hosts, present := (*overrides)["hosts"]; present {
@@ -58,9 +65,23 @@ func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (
 			}
 		}
 	}
+
+	// populate Tasks Vars field with Plan Vars
+	// or combine them only if task has a valid Include field
+	// else task is a normal task and doesn't require Vars context
+	// because tasks are rendered as a bundle and not individually
+	// so vars context is only needed when calling PrepareTasks for Includes
+	for ndx, task := range plan.Tasks {
+		if task.Include != "" {
+			if plan.Tasks[ndx].Vars != nil {
+				mergeMap(plan.Vars, plan.Tasks[ndx].Vars, false)
+			} else {
+				plan.Tasks[ndx].Vars = plan.Vars
+			}
+		}
+	}
+
 	plan.report = make(map[string]string)
-	//fmt.Println(plan.Tasks)
-	//plan.parseTasks()
 
 	return &plan, nil
 }
@@ -68,38 +89,43 @@ func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (
 // change this to be a non-plan function
 // come back to context variable stuff after getting include done
 // look at diagram
-/*
-func (plan *Plan) PrepareTasks(tasks []Task, vars *TaskVars, machine Machine) ([]Task, error) {
-	tmpl, err := pongo2.FromFile(planFile)
+// renders Task list, uses vars and machine for context
+func PrepareTasks(tasks []Task, vars *TaskVars, machine Machine) ([]Task, error) {
+	// changes Task array back to yaml form to be rendered
+	var newTasks = []Task{}
+	tasksBuf, err := yaml.Marshal(&tasks)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	ctxt := pongo2.Context{"vars": plan.Vars, "machine": machine}
+	// convert tasks to a pongo2 template
+	tmpl, err := pongo2.FromString(string(tasksBuf))
+	if err != nil {
+		return nil, err
+	}
 
+	// add context and render
+	ctxt := pongo2.Context{"vars": vars, "machine": machine}
 	out, err := tmpl.Execute(ctxt)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	planBuf := []byte(out)
-
-	newPlan := Plan{}
-	err = yaml.Unmarshal(planBuf, &newPlan)
+	// change the newly rendered yaml format array back to a struct
+	err = yaml.Unmarshal([]byte(out), &newTasks)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	plan.Tasks = newPlan.Tasks
-
-	return nil, nil
+	return newTasks, nil
 }
-*/
+
 // Updates the task list if there is a valid include param
 // TODO: if there's a vars param too use the template in
 //       the context of that vars,  currently it's using "global"
 //       vars.
-func UpdateTasks(tasks []Task, ndx int) ([]Task, error) {
+// vars should never be nil
+func UpdateTasks(tasks []Task, vars *TaskVars, ndx int, machine Machine) ([]Task, error) {
 	includeBuf, err := ioutil.ReadFile(tasks[ndx].Include)
 	if err != nil {
 		return nil, err
@@ -111,15 +137,26 @@ func UpdateTasks(tasks []Task, ndx int) ([]Task, error) {
 		return nil, err
 	}
 
-	//mergeMap(plan.Vars, tmpPlan.Vars)
-	/*tmpPlan.Vars = plan.Vars
-	err = tmpPlan.PrepareTasks(plan.Tasks[ndx].Include, machine)
-	if err != nil {
-		return err
-	}*/
+	_tmpVars := make(TaskVars)
+	tmpPlan.Vars = &_tmpVars
+	mergeMap(vars, tmpPlan.Vars, false)
 
-	newTasks := tmpPlan.Tasks
-	tasks = append(tasks[:ndx+1], append(newTasks, tasks[ndx+1:]...)...)
+	for ndx, task := range tmpPlan.Tasks {
+		if task.Include != "" {
+			if tmpPlan.Tasks[ndx].Vars != nil {
+				mergeMap(tmpPlan.Vars, tmpPlan.Tasks[ndx].Vars, false)
+			} else {
+				tmpPlan.Tasks[ndx].Vars = tmpPlan.Vars
+			}
+		}
+	}
+
+	tmpPlan.Tasks, err = PrepareTasks(tmpPlan.Tasks, tmpPlan.Vars, machine)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks = append(tasks[:ndx+1], append(tmpPlan.Tasks, tasks[ndx+1:]...)...)
 
 	return tasks, nil
 }

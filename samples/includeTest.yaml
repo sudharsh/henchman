@@ -12,7 +12,10 @@ tasks:
   - name: Echo start
     action: echo "START" 
 
-  - include: samples/first.yaml
+  - include: samples/tasks.yaml
   
+  - name: Echo last time
+    action: echo "I AM {{ machine.Hostname }} {{ vars.tmp }}"
+
   - name: Echo last time
     action: echo "FINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN!!!!~~!~!~!~!~~~~~"

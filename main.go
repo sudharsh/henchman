@@ -154,7 +154,12 @@ func main() {
 		machine.Transport = sshTransport(&tc, hostname)
 
 		//renders all tasks in the plan file
-		//plan.PrepareTasks(planFile, machine)
+		plan.Tasks, err = henchman.PrepareTasks(plan.Tasks, plan.Vars, machine)
+
+		if err != nil {
+			fmt.Println("FUCK")
+			fmt.Println(err)
+		}
 
 		wg.Add(1)
 		go func(machine *henchman.Machine) {
@@ -171,12 +176,10 @@ func main() {
 				// else
 				//    do standard task run procedure
 				if task.Include != "" {
-					tasks, err = henchman.UpdateTasks(tasks, ndx)
+					tasks, err = henchman.UpdateTasks(tasks, task.Vars, ndx, *machine)
 					if err != nil {
 						fmt.Println(err)
 					}
-					//fmt.Println("TASK HAS BEEN UPDATED")
-					//fmt.Println(tasks)
 				} else {
 					if tasks[ndx].LocalAction {
 						log.Printf("Local action detected\n")
