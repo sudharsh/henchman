@@ -173,7 +173,6 @@ func main() {
 				if task.Include != "" {
 					tasks, err = henchman.UpdateTasks(tasks, ndx)
 					if err != nil {
-						fmt.Println("FUCK")
 						fmt.Println(err)
 					}
 					//fmt.Println("TASK HAS BEEN UPDATED")
