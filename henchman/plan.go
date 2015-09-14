@@ -16,7 +16,7 @@ type TaskVars map[string]interface{}
 type Plan struct {
 	Hosts []string
 	Tasks []Task `yaml:"tasks"`
-	Vars  *TaskVars
+	Vars  TaskVars
 	Name  string
 
 	report map[string]string
@@ -25,9 +25,7 @@ type Plan struct {
 
 // source values will override dest values override is true
 // else dest values will not be overridden
-func mergeMap(source *TaskVars, destination *TaskVars, override bool) {
-	src := *source
-	dst := *destination
+func mergeMap(src TaskVars, dst TaskVars, override bool) {
 	for variable, value := range src {
 		if override == true {
 			dst[variable] = value
@@ -40,13 +38,13 @@ func mergeMap(source *TaskVars, destination *TaskVars, override bool) {
 // Returns a new plan with a collection of tasks. The planBuf and hostsFileBuf should be a valid
 // 'yaml' representation. Additionally, this function also takes in any variable
 // overrides that takes precedence over the variables present in the plan.
-func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (*Plan, error) {
+func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides TaskVars) (*Plan, error) {
 	plan := Plan{}
 	err := yaml.Unmarshal(planBuf, &plan)
 
 	if plan.Vars == nil {
 		_vars := make(TaskVars)
-		plan.Vars = &_vars
+		plan.Vars = _vars
 	}
 	if err != nil {
 		return nil, err
@@ -56,7 +54,7 @@ func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (
 		mergeMap(overrides, plan.Vars, true)
 		// if a hostsFile is specified, means checks the hosts override to get a list
 		if hostsFileBuf != nil {
-			if hosts, present := (*overrides)["hosts"]; present {
+			if hosts, present := overrides["hosts"]; present {
 				hostsMap := make(map[interface{}][]string)
 				err = yaml.Unmarshal(hostsFileBuf, &hostsMap)
 				// should do something if there is an err, will get back to this
@@ -90,7 +88,7 @@ func NewPlanFromYAML(planBuf []byte, hostsFileBuf []byte, overrides *TaskVars) (
 // come back to context variable stuff after getting include done
 // look at diagram
 // renders Task list, uses vars and machine for context
-func PrepareTasks(tasks []Task, vars *TaskVars, machine Machine) ([]Task, error) {
+func PrepareTasks(tasks []Task, vars TaskVars, machine Machine) ([]Task, error) {
 	// changes Task array back to yaml form to be rendered
 	var newTasks = []Task{}
 	tasksBuf, err := yaml.Marshal(&tasks)
@@ -123,7 +121,7 @@ func PrepareTasks(tasks []Task, vars *TaskVars, machine Machine) ([]Task, error)
 // Updates the task list if there is a valid include param
 // for each include param it will update the vars context if
 // it's provided.
-func UpdateTasks(tasks []Task, vars *TaskVars, ndx int, machine Machine) ([]Task, error) {
+func UpdateTasks(tasks []Task, vars TaskVars, ndx int, machine Machine) ([]Task, error) {
 	includeBuf, err := ioutil.ReadFile(tasks[ndx].Include)
 	if err != nil {
 		return nil, err
@@ -138,8 +136,8 @@ func UpdateTasks(tasks []Task, vars *TaskVars, ndx int, machine Machine) ([]Task
 
 	// if there were no variables provided by the include task
 	// populate it with variables in the previous context
-	_tmpVars := make(TaskVars)
-	tmpPlan.Vars = &_tmpVars
+	_vars := make(TaskVars)
+	tmpPlan.Vars = _vars
 	mergeMap(vars, tmpPlan.Vars, false)
 
 	for ndx, task := range tmpPlan.Tasks {

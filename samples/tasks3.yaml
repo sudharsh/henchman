@@ -1,3 +1,6 @@
 tasks:
   - name: Echo "{{ vars.service }}" 
-    action: echo "{{ vars.service }} at {{ machine.Hostname}} {{ vars.tmp }}, {{ vars.servicetest}}" 
+    action: echo "In tasks3.yaml {{ vars.service }} at {{ machine.Hostname}}"
+
+  - name: Echo 2
+    action: echo "In tasks3.yaml. {{ vars.tmp }}, {{ vars.servicetest }}"

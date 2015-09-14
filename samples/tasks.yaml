@@ -6,7 +6,7 @@ tasks:
     action: uname -a
 
   - name: Echo "{{ vars.service }}" 
-    action: echo "{{ vars.service }} at {{ machine.Hostname}}" 
+    action: echo "In tasks.yaml {{ vars.service }} at {{ machine.Hostname}}"
    
   - include: samples/tasks2.yaml
     vars:

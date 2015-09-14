@@ -138,7 +138,7 @@ func main() {
 
 	var plan *henchman.Plan
 	parsedArgs := parseExtraArgs(*extraArgs)
-	plan, err = henchman.NewPlanFromYAML(planBuf, hostsFileBuf, &parsedArgs)
+	plan, err = henchman.NewPlanFromYAML(planBuf, hostsFileBuf, parsedArgs)
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)

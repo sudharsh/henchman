@@ -10,12 +10,12 @@ hosts:
 
 tasks:
   - name: Echo start
-    action: echo "START" 
+    action: echo "START"
 
   - include: samples/tasks.yaml
-  
+
   - name: Echo last time
-    action: echo "I AM {{ machine.Hostname }} {{ vars.tmp }}"
+    action: echo "In includeTest.yaml. {{ machine.Hostname }} with {{ vars.service }}"
 
   - name: Echo last time
     action: echo "FINNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN!!!!~~!~!~!~!~~~~~"

@@ -29,7 +29,7 @@ type Task struct {
 	Register     string
 	Include      string
 	When         string
-	Vars         *TaskVars
+	Vars         TaskVars
 	IgnoreErrors bool `yaml:"ignore_errors"`
 	LocalAction  bool `yaml:"local"`
 }
@@ -61,7 +61,7 @@ func (task *Task) prepare(vars *TaskVars, machine *Machine) {
 */
 // Runs the task on the machine. The task might mutate `vars` so that other
 // tasks down the `plan` can see any additions/updates.
-func (task *Task) Run(machine *Machine, vars *TaskVars) (*TaskStatus, error) {
+func (task *Task) Run(machine *Machine, vars TaskVars) (*TaskStatus, error) {
 	//task.prepare(vars, machine)
 	task.Id = uuid.New()
 	out, err := machine.Transport.Exec(task.Action)

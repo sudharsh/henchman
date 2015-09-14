@@ -1,6 +1,6 @@
 tasks:
   - name: Echo "{{ vars.service }}" 
-    action: echo "still {{ vars.service }} at {{ machine.Hostname}}" 
+    action: echo "In tasks2.yaml still {{ vars.service }} at {{ machine.Hostname}} with {{ vars.tmp }}"
 
   - include: samples/tasks3.yaml
     vars:
@@ -8,4 +8,4 @@ tasks:
       tmp: cryForMeChild
 
   - name: Echo "{{ vars.service }}" 
-    action: echo "round 2 {{ vars.service }} at {{ machine.Hostname}}" 
+    action: echo "Still in tasks2.yaml. Round 2 {{ vars.service }} at {{ machine.Hostname}} should match previous"
