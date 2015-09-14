@@ -4,7 +4,7 @@ tasks:
 
   - include: samples/tasks3.yaml
     vars:
-      service: heyooooyoo
+      servicetest: heyooooyoo
       tmp: cryForMeChild
 
   - name: Echo "{{ vars.service }}" 

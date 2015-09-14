@@ -157,14 +157,16 @@ func main() {
 		plan.Tasks, err = henchman.PrepareTasks(plan.Tasks, plan.Vars, machine)
 
 		if err != nil {
-			fmt.Println("FUCK")
 			fmt.Println(err)
 		}
 
+		// for each host use the task list of the plan and run each task individually
 		wg.Add(1)
 		go func(machine *henchman.Machine) {
 			defer wg.Done()
 
+			// makes a temporary tasks to temper with
+			// plan.Tasks is a slice though issues may arise
 			tasks := plan.Tasks
 			for ndx := 0; ndx < len(tasks); ndx++ {
 				var status *henchman.TaskStatus

@@ -121,22 +121,23 @@ func PrepareTasks(tasks []Task, vars *TaskVars, machine Machine) ([]Task, error)
 }
 
 // Updates the task list if there is a valid include param
-// TODO: if there's a vars param too use the template in
-//       the context of that vars,  currently it's using "global"
-//       vars.
-// vars should never be nil
+// for each include param it will update the vars context if
+// it's provided.
 func UpdateTasks(tasks []Task, vars *TaskVars, ndx int, machine Machine) ([]Task, error) {
 	includeBuf, err := ioutil.ReadFile(tasks[ndx].Include)
 	if err != nil {
 		return nil, err
 	}
 
+	// creates a new Plan object with only the tasks field filled in
 	tmpPlan := Plan{}
 	err = yaml.Unmarshal(includeBuf, &tmpPlan)
 	if err != nil {
 		return nil, err
 	}
 
+	// if there were no variables provided by the include task
+	// populate it with variables in the previous context
 	_tmpVars := make(TaskVars)
 	tmpPlan.Vars = &_tmpVars
 	mergeMap(vars, tmpPlan.Vars, false)
@@ -156,6 +157,7 @@ func UpdateTasks(tasks []Task, vars *TaskVars, ndx int, machine Machine) ([]Task
 		return nil, err
 	}
 
+	// insert the tasks in the tasks list
 	tasks = append(tasks[:ndx+1], append(tmpPlan.Tasks, tasks[ndx+1:]...)...)
 
 	return tasks, nil
