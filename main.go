@@ -154,7 +154,7 @@ func main() {
 		machine.Transport = sshTransport(&tc, hostname)
 
 		// initializes a map for "register" values for each host
-		regMap := make(map[string]string)
+		registerMap := make(map[string]string)
 
 		//renders all tasks in the plan file
 		plan.Tasks, err = henchman.PrepareTasks(plan.Tasks, plan.Vars, machine)
@@ -180,24 +180,23 @@ func main() {
 				//    update task list
 				// else
 				//    do standard task run procedure
-				if task.Include != "" {
-					tasks, err = henchman.UpdateTasks(tasks, task.Vars, ndx, *machine)
-					if err != nil {
-						fmt.Println(err)
-					}
-				} else {
-					whenVal, err := henchman.CheckWhen(task.When, regMap)
-					if err != nil {
-						log.Println("Error at When Eval at task: " + task.Name)
-						log.Println("Error: " + err.Error())
-					}
-
-					if whenVal == true {
+				whenVal, err := task.ProcessWhen(registerMap)
+				if err != nil {
+					log.Println("Error at When Eval at task: " + task.Name)
+					log.Println("Error: " + err.Error())
+				}
+				if whenVal == true {
+					if task.Include != "" {
+						tasks, err = henchman.UpdateTasks(tasks, task.Vars, ndx, *machine)
+						if err != nil {
+							fmt.Println(err)
+						}
+					} else {
 						if tasks[ndx].LocalAction {
 							log.Printf("Local action detected\n")
-							status, err = task.Run(local, regMap)
+							status, err = task.Run(local, registerMap)
 						} else {
-							status, err = task.Run(machine, regMap)
+							status, err = task.Run(machine, registerMap)
 						}
 						plan.SaveStatus(&task, status.Status)
 						if err != nil {
