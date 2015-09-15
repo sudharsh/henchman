@@ -13,7 +13,7 @@ import (
 
 	"code.google.com/p/gopass"
 
-	"github.com/jlin21/henchman/henchman"
+	"github.com/sudharsh/henchman/henchman"
 )
 
 func currentUsername() *user.User {
