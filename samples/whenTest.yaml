@@ -9,15 +9,17 @@ hosts:
  - 192.168.33.10
 
 tasks:
-  - name: Local actions
-    action: ls 
-    local: true
-    register: retVal
+  - name: Start
+    action: echo "start"
+    register: first
 
   - name: Echo test 
+    when: first == "start"
     action: pwd 
-    register: echo
 
   - name: Echo test 
+    when: first == "end"
     action: echo "wooo hooooo" 
-    register: nother
+
+  - name: End
+    action: echo "end"

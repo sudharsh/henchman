@@ -5,6 +5,7 @@ import (
 	"github.com/flosch/pongo2"
 	"gopkg.in/yaml.v1"
 	"io/ioutil"
+	"strconv"
 	//"strings"
 )
 
@@ -20,7 +21,6 @@ type Plan struct {
 	Name  string
 
 	report map[string]string
-	//tasks  []map[string]string `yaml:"tasks"`
 }
 
 // source values will override dest values override is true
@@ -159,6 +159,39 @@ func UpdateTasks(tasks []Task, vars TaskVars, ndx int, machine Machine) ([]Task,
 	tasks = append(tasks[:ndx+1], append(tmpPlan.Tasks, tasks[ndx+1:]...)...)
 
 	return tasks, nil
+}
+
+// Evaluates the "When" parameter of a task using pongo2 templating
+func CheckWhen(when string, regMap map[string]string) (bool, error) {
+	if when == "" {
+		return true, nil
+	}
+
+	tmpl, err := pongo2.FromString("{{ " + when + " }}")
+	if err != nil {
+		return false, err
+	}
+
+	// create context and execute
+	ctxt := pongo2.Context{}
+	for key, val := range regMap {
+		ctxt = ctxt.Update(pongo2.Context{key: val[0 : len(val)-2]})
+	}
+
+	//ctxt = ctxt.Update(pongo2.Context{"first": "start"})
+	fmt.Println(ctxt)
+	out, err := tmpl.Execute(ctxt)
+	fmt.Println("VALUE OF OUT IS: " + out)
+	if err != nil {
+		return false, err
+	}
+
+	retVal, err := strconv.ParseBool(out)
+	if err != nil {
+		return false, err
+	}
+
+	return retVal, nil
 }
 
 // Prints the summary of the Plan execution across all the hosts

@@ -61,16 +61,21 @@ func (task *Task) prepare(vars *TaskVars, machine *Machine) {
 */
 // Runs the task on the machine. The task might mutate `vars` so that other
 // tasks down the `plan` can see any additions/updates.
-func (task *Task) Run(machine *Machine, vars TaskVars) (*TaskStatus, error) {
+func (task *Task) Run(machine *Machine, regMap map[string]string) (*TaskStatus, error) {
 	//task.prepare(vars, machine)
 	task.Id = uuid.New()
 	out, err := machine.Transport.Exec(task.Action)
+
 	var taskStatus string = "success"
 	if err != nil {
 		if task.IgnoreErrors {
 			taskStatus = "ignored"
 		} else {
 			taskStatus = "failure"
+		}
+	} else {
+		if task.Register != "" {
+			regMap[task.Register] = out.String()
 		}
 	}
 	status := TaskStatus{taskStatus, out.String()}

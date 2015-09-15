@@ -153,6 +153,9 @@ func main() {
 		machine.Hostname = hostname
 		machine.Transport = sshTransport(&tc, hostname)
 
+		// initializes a map for "register" values for each host
+		regMap := make(map[string]string)
+
 		//renders all tasks in the plan file
 		plan.Tasks, err = henchman.PrepareTasks(plan.Tasks, plan.Vars, machine)
 
@@ -183,19 +186,27 @@ func main() {
 						fmt.Println(err)
 					}
 				} else {
-					if tasks[ndx].LocalAction {
-						log.Printf("Local action detected\n")
-						status, err = task.Run(local, plan.Vars)
-					} else {
-						status, err = task.Run(machine, plan.Vars)
-					}
-					plan.SaveStatus(&task, status.Status)
+					whenVal, err := henchman.CheckWhen(task.When, regMap)
 					if err != nil {
-						log.Printf("Error when executing task: %s\n", err.Error())
+						log.Println("Error at When Eval at task: " + task.Name)
+						log.Println("Error: " + err.Error())
 					}
-					if status.Status == "failure" {
-						log.Printf("Task was unsuccessful: %s\n", task.Id)
-						break
+
+					if whenVal == true {
+						if tasks[ndx].LocalAction {
+							log.Printf("Local action detected\n")
+							status, err = task.Run(local, regMap)
+						} else {
+							status, err = task.Run(machine, regMap)
+						}
+						plan.SaveStatus(&task, status.Status)
+						if err != nil {
+							log.Printf("Error when executing task: %s\n", err.Error())
+						}
+						if status.Status == "failure" {
+							log.Printf("Task was unsuccessful: %s\n", task.Id)
+							break
+						}
 					}
 				}
 			}
