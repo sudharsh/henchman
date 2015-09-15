@@ -1,0 +1,36 @@
+---
+name: "Test plan"
+  
+vars:
+  service: iptables
+  keyfile: "~/.ssh/id_rsa.pub"
+  
+hosts:
+ - 192.168.33.10
+
+tasks:
+  - name: Local actions
+    action: ls 
+    local: true
+  
+  - name: "Pinging myself at {{ machine.Hostname }}"
+    action: ping -c 3 {{ machine.Hostname }}
+
+  - name: Checking if package {{ vars.service }} exists
+    action: sudo /sbin/service {{ vars.service }} status
+    ignore_errors: true  
+
+hosts:
+ - 192.168.33.11
+
+tasks:
+  - name: Local actions
+    action: ls 
+    local: true
+  
+  - name: "Pinging myself at {{ machine.Hostname }}"
+    action: ping -c 3 {{ machine.Hostname }}
+
+  - name: Checking if package {{ vars.service }} exists
+    action: sudo /sbin/service {{ vars.service }} status
+    ignore_errors: true  

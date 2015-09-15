@@ -7,6 +7,34 @@ vars:
   
 hosts:
   - 192.168.33.11
+  
+tasks:
+  - name: Local actions
+    action: ls 
+    local: true
+  
+  - name: Get uname
+    action: uname -a
+
+  - name: Checking if package {{ vars.service }} exists
+    action: sudo /sbin/service {{ vars.service }} status
+    ignore_errors: true  
+
+
+  - name: Task that will most definitely error out which we will ignore
+    action: cat non_existent_file
+    ignore_errors: true
+
+  - name: "Pinging myself at {{ machine.Hostname }}"
+    action: ping -c 3 {{ machine.Hostname }}
+
+  - name: "Task which is gonna fail"
+    action: cat non_existent_file
+
+  - name: "This task won't execute"
+    action: ls -al
+    
+hosts:
   - 192.168.33.12
   
 tasks:
@@ -35,6 +63,7 @@ tasks:
   - name: "This task won't execute"
     action: ls -al
     
+
 
 
 

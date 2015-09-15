@@ -13,7 +13,7 @@ import (
 
 	"code.google.com/p/gopass"
 
-	"github.com/sudharsh/henchman/henchman"
+	"github.com/jlin21/henchman/henchman"
 )
 
 func currentUsername() *user.User {
@@ -86,6 +86,7 @@ func main() {
 	usePassword := flag.Bool("password", false, "Use password authentication")
 	keyfile := flag.String("private-keyfile", defaultKeyFile(), "Path to the keyfile")
 	extraArgs := flag.String("args", "", "Extra arguments for the plan")
+	hostsFile := flag.String("i", "", "Specify hosts file name")
 
 	modulesDir, err := validateModulesPath()
 	if err != nil {
@@ -127,9 +128,17 @@ func main() {
 		log.Fatalf("Error reading plan - %s\n", planFile)
 	}
 
+	var hostsFileBuf []byte = nil
+	if *hostsFile != "" {
+		hostsFileBuf, err = ioutil.ReadFile(*hostsFile)
+		if err != nil {
+			log.Fatalf("Error reading hosts file - %s\n", *hostsFile)
+		}
+	}
+
 	var plan *henchman.Plan
 	parsedArgs := parseExtraArgs(*extraArgs)
-	plan, err = henchman.NewPlanFromYAML(planBuf, &parsedArgs)
+	plan, err = henchman.NewPlanFromYAML(planBuf, hostsFileBuf, parsedArgs)
 	if err != nil {
 		log.Fatalf("Couldn't read the plan: %s", err)
 		os.Exit(1)
@@ -143,25 +152,62 @@ func main() {
 		machine := henchman.Machine{}
 		machine.Hostname = hostname
 		machine.Transport = sshTransport(&tc, hostname)
+
+		// initializes a map for "register" values for each host
+		regMap := make(map[string]string)
+
+		//renders all tasks in the plan file
+		plan.Tasks, err = henchman.PrepareTasks(plan.Tasks, plan.Vars, machine)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// for each host use the task list of the plan and run each task individually
 		wg.Add(1)
 		go func(machine *henchman.Machine) {
 			defer wg.Done()
-			for _, task := range plan.Tasks {
+
+			// makes a temporary tasks to temper with
+			// plan.Tasks is a slice though issues may arise
+			tasks := plan.Tasks
+			for ndx := 0; ndx < len(tasks); ndx++ {
 				var status *henchman.TaskStatus
 				var err error
-				if task.LocalAction {
-					log.Printf("Local action detected\n")
-					status, err = task.Run(local, plan.Vars)
+				task := tasks[ndx]
+
+				// if there is a valid include field within task
+				//    update task list
+				// else
+				//    do standard task run procedure
+				if task.Include != "" {
+					tasks, err = henchman.UpdateTasks(tasks, task.Vars, ndx, *machine)
+					if err != nil {
+						fmt.Println(err)
+					}
 				} else {
-					status, err = task.Run(machine, plan.Vars)
-				}
-				plan.SaveStatus(&task, status.Status)
-				if err != nil {
-					log.Printf("Error when executing task: %s\n", err.Error())
-				}
-				if status.Status == "failure" {
-					log.Printf("Task was unsuccessful: %s\n", task.Id)
-					break
+					whenVal, err := henchman.CheckWhen(task.When, regMap)
+					if err != nil {
+						log.Println("Error at When Eval at task: " + task.Name)
+						log.Println("Error: " + err.Error())
+					}
+
+					if whenVal == true {
+						if tasks[ndx].LocalAction {
+							log.Printf("Local action detected\n")
+							status, err = task.Run(local, regMap)
+						} else {
+							status, err = task.Run(machine, regMap)
+						}
+						plan.SaveStatus(&task, status.Status)
+						if err != nil {
+							log.Printf("Error when executing task: %s\n", err.Error())
+						}
+						if status.Status == "failure" {
+							log.Printf("Task was unsuccessful: %s\n", task.Id)
+							break
+						}
+					}
 				}
 			}
 		}(&machine)

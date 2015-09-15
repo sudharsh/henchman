@@ -1,0 +1,25 @@
+---
+name: "Test plan"
+  
+vars:
+  service: iptables
+  keyfile: "~/.ssh/id_rsa.pub"
+  
+hosts:
+ - 192.168.33.10
+
+tasks:
+  - name: Start
+    action: echo "start"
+    register: first
+
+  - name: Echo test 
+    when: first == "start"
+    action: pwd 
+
+  - name: Echo test 
+    when: first == "end"
+    action: echo "wooo hooooo" 
+
+  - name: End
+    action: echo "end"

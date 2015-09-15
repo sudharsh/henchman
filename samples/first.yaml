@@ -1,0 +1,8 @@
+tasks:
+  - name: Echo First 
+    action: echo "first nested arrival ONE" 
+  
+  - include: samples/second.yaml
+
+  - name: Echo Second
+    action: echo "first nested arrival TWO" 

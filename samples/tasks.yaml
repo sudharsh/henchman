@@ -1,0 +1,13 @@
+tasks:
+  - name: Pinging myself at "{{ machine.Hostname }}"
+    action: ping -c 3 {{ machine.Hostname }}
+
+  - name: Get uname
+    action: uname -a
+
+  - name: Echo "{{ vars.service }}" 
+    action: echo "In tasks.yaml {{ vars.service }} at {{ machine.Hostname}}"
+   
+  - include: samples/tasks2.yaml
+    vars:
+      tmp: dunThinkSo
