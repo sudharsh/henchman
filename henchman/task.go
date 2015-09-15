@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"code.google.com/p/go-uuid/uuid"
-	//"github.com/flosch/pongo2"
+	"github.com/flosch/pongo2"
 
 	"github.com/sudharsh/henchman/ansi"
 )
@@ -83,4 +83,28 @@ func (task *Task) Run(machine *Machine, regMap map[string]string) (*TaskStatus, 
 	var reset string = statuses["reset"]
 	log.Printf("%s: %s [%s] - %s", task.Id, escapeCode, status.Status, status.Message+reset)
 	return &status, err
+}
+
+func (task *Task) ProcessWhen(regMap map[string]string) (bool, error) {
+	if task.When == "" {
+		return true, nil
+	}
+
+	tmpl, err := pongo2.FromString("{{ " + task.When + " }}")
+	if err != nil {
+		return false, err
+	}
+
+	//ctxt = ctxt.Update(pongo2.Context{"first": "start"})
+	out, err := tmpl.Execute(regMap)
+	if err != nil {
+		return false, err
+	}
+
+	retVal, err := strconv.ParseBool(out)
+	if err != nil {
+		return false, err
+	}
+
+	return retVal, nil
 }
