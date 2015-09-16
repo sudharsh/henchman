@@ -154,7 +154,7 @@ func main() {
 		machine.Transport = sshTransport(&tc, hostname)
 
 		// initializes a map for "register" values for each host
-		registerMap := make(map[string]string)
+		registerMap := make(map[string]interface{})
 
 		//renders all tasks in the plan file
 		tasks, err := henchman.PrepareTasks(plan.Tasks, plan.Vars, machine)
