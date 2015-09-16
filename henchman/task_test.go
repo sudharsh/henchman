@@ -43,7 +43,7 @@ func TestRun(t *testing.T) {
 
 	local, _ := NewLocal(nil)
 	machine := Machine{"127.0.0.1", local}
-	regMap := make(map[string]string)
+	regMap := make(map[string]interface{})
 	status, err := task.Run(&machine, regMap)
 	if err != nil {
 		t.Errorf("There shouldn't have been any error for this task")
@@ -63,18 +63,75 @@ func TestProcessWhen(t *testing.T) {
 		"echo hello",
 		"",
 		"",
-		"first == \"hello\"",
+		"first.Stdout == \"hello\"",
 		nil,
 		false,
 		false,
 	}
 
-	regMap := map[string]string{"first": "hello"}
+	output := RegisterOutput{
+		Stdout: "hello",
+		Stderr: "",
+		Rc:     "success",
+	}
+
+	regMap := make(map[string]interface{})
+	regMap["first"] = output
+
 	whenVal, err := task.ProcessWhen(regMap)
 	if err != nil {
 		t.Errorf("There shouldn't have been any error using ProcessWhen")
 	}
 	if whenVal == false {
 		t.Errorf("This ProcessWhen should always evaluate to true")
+	}
+}
+
+func TestProcessWhenWithFilters(t *testing.T) {
+	task := Task{
+		"fake-uuid",
+		"The foo",
+		"echo hello",
+		"",
+		"",
+		"first.Rc|success",
+		nil,
+		false,
+		false,
+	}
+
+	output := RegisterOutput{
+		Stdout: "hello",
+		Stderr: "",
+		Rc:     "success",
+	}
+
+	regMap := make(map[string]interface{})
+	regMap["first"] = output
+
+	whenVal, err := task.ProcessWhen(regMap)
+	if err != nil {
+		t.Errorf("There shouldn't have been any error using ProcessWhen")
+	}
+	if whenVal == false {
+		t.Errorf("The ProcessWhen filter \"success\" should evaluate to true")
+	}
+
+	output.Rc = "failure"
+	task.When = "first.Rc|failure"
+	if whenVal == false {
+		t.Errorf("The ProcessWhen filter \"failure\" should evaluate to true")
+	}
+
+	output.Rc = "ignored"
+	task.When = "first.Rc|ignored"
+	if whenVal == false {
+		t.Errorf("The ProcessWhen filter \"ignored\" should evaluate to true")
+	}
+
+	output.Rc = "reset"
+	task.When = "first.Rc|reset"
+	if whenVal == false {
+		t.Errorf("The ProcessWhen filter \"reset\" should evaluate to true")
 	}
 }
