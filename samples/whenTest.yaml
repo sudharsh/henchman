@@ -14,7 +14,7 @@ tasks:
     register: first
 
   - name: Echo test 
-    when: first == "start"
+    when: first.Rc|success
     action: pwd 
 
   - name: Echo test 
