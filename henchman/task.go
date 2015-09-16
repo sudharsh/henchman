@@ -1,8 +1,10 @@
 package henchman
 
 import (
+	//"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/flosch/pongo2"
@@ -86,6 +88,9 @@ func (task *Task) Run(machine *Machine, regMap map[string]string) (*TaskStatus, 
 	return &status, err
 }
 
+// Processes When param of a task.  Evaluates it using pongo2 and uses
+// a registerMap (populated by other tasks register variables) as the
+// context
 func (task *Task) ProcessWhen(regMap map[string]string) (bool, error) {
 	if task.When == "" {
 		return true, nil
@@ -99,11 +104,11 @@ func (task *Task) ProcessWhen(regMap map[string]string) (bool, error) {
 	// create context and execute
 	ctxt := pongo2.Context{}
 	for key, val := range regMap {
-		ctxt = ctxt.Update(pongo2.Context{key: val[0 : len(val)-2]})
+		ctxt = ctxt.Update(pongo2.Context{key: strings.TrimSpace(val)})
 	}
 
-	//ctxt = ctxt.Update(pongo2.Context{"first": "start"})
 	out, err := tmpl.Execute(ctxt)
+
 	if err != nil {
 		return false, err
 	}

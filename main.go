@@ -157,7 +157,7 @@ func main() {
 		registerMap := make(map[string]string)
 
 		//renders all tasks in the plan file
-		plan.Tasks, err = henchman.PrepareTasks(plan.Tasks, plan.Vars, machine)
+		tasks, err := henchman.PrepareTasks(plan.Tasks, plan.Vars, machine)
 
 		if err != nil {
 			fmt.Println(err)
@@ -169,8 +169,6 @@ func main() {
 			defer wg.Done()
 
 			// makes a temporary tasks to temper with
-			// plan.Tasks is a slice though issues may arise
-			tasks := plan.Tasks
 			for ndx := 0; ndx < len(tasks); ndx++ {
 				var status *henchman.TaskStatus
 				var err error
@@ -187,9 +185,10 @@ func main() {
 				}
 				if whenVal == true {
 					if task.Include != "" {
-						tasks, err = henchman.UpdateTasks(tasks, task.Vars, ndx, *machine)
+						err = henchman.UpdateTasks(&tasks, task.Vars, ndx, *machine)
 						if err != nil {
-							fmt.Println(err)
+							log.Println("Error at Include Eval at task: " + task.Name)
+							log.Println("Error: " + err.Error())
 						}
 					} else {
 						if tasks[ndx].LocalAction {
