@@ -1,3 +1,5 @@
+THIS REPO HAS BEEN MOVED TO [github.com/apigee/henchman](https://github.com/apigee/henchman)
+
 henchman [![Build Status](https://travis-ci.org/sudharsh/henchman.svg?branch=master)](https://travis-ci.org/sudharsh/henchman)
 ========
 
